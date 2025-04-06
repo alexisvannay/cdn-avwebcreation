@@ -34,23 +34,25 @@ const message = document.getElementById("message");
 // 🔐 Authentification
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = "index.html";
+    // Laisser un peu de temps au cas où la session s'active
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 1000);
     return;
   }
 
   const uid = user.uid;
 
   try {
-    // Récupération du profil utilisateur
     const profilRef = doc(db, "users", uid);
     const profilSnap = await getDoc(profilRef);
 
     if (profilSnap.exists()) {
-      // Préremplissage
+      // Préremplir les champs
       await preRemplirFormulaire(uid);
       await preRemplirHoraires(uid);
 
-      // Sauvegardes
+      // Activer les boutons
       activerSauvegarde(uid);
       activerSauvegardeHoraires(uid);
     }
@@ -59,7 +61,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// 📥 Pré-remplissage des infos de contact
+// 📥 Pré-remplir formulaire contact
 async function preRemplirFormulaire(uid) {
   try {
     const docRef = doc(db, "infos", uid);
@@ -78,7 +80,7 @@ async function preRemplirFormulaire(uid) {
   }
 }
 
-// 💾 Sauvegarde des infos de contact
+// 💾 Sauvegarde infos contact
 function activerSauvegarde(uid) {
   if (!saveBtn) return;
 
@@ -112,12 +114,9 @@ function activerSauvegarde(uid) {
   });
 }
 
-// 📥 Pré-remplissage des horaires
+// 📥 Pré-remplir horaires
 async function preRemplirHoraires(uid) {
-  const jours = [
-    "lundi", "mardi", "mercredi", "jeudi",
-    "vendredi", "samedi", "dimanche"
-  ];
+  const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
   try {
     const docRef = doc(db, "horaires", uid);
@@ -125,7 +124,6 @@ async function preRemplirHoraires(uid) {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
-
       jours.forEach(jour => {
         const input = document.getElementById(`horaire-${jour}`);
         if (input) input.value = data[jour] ?? "";
@@ -136,13 +134,9 @@ async function preRemplirHoraires(uid) {
   }
 }
 
-// 💾 Sauvegarde des horaires
+// 💾 Sauvegarde horaires
 function activerSauvegardeHoraires(uid) {
-  const jours = [
-    "lundi", "mardi", "mercredi", "jeudi",
-    "vendredi", "samedi", "dimanche"
-  ];
-
+  const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
   const saveBtn = document.getElementById("save-horaires");
   const message = document.getElementById("message-horaires");
 
@@ -150,7 +144,6 @@ function activerSauvegardeHoraires(uid) {
 
   saveBtn.addEventListener("click", async () => {
     const horaires = {};
-
     jours.forEach(jour => {
       const input = document.getElementById(`horaire-${jour}`);
       horaires[jour] = input?.value ?? "";
