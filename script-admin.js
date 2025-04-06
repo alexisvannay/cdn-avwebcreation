@@ -51,21 +51,7 @@ onAuthStateChanged(auth, async (user) => {
       const type = userData.typeClient ?? "basic";
 
       // 🎨 Afficher les sections selon le type d'abonnement
-      if (type === "basic") {
-        document.getElementById("formulaire-contact")?.style.setProperty("display", "block");
-      } else if (type === "galerie") {
-        document.getElementById("formulaire-contact")?.style.setProperty("display", "block");
-        document.getElementById("formulaire-galerie")?.style.setProperty("display", "block");
-      } else if (type === "admin") {
-        document.querySelectorAll(".admin-section").forEach(el => el.style.setProperty("display", "block"));
-      } else {
-        document.getElementById("section-non-autorisee")?.style.setProperty("display", "block");
-      }
-
-      // 🎫 Affichage du badge
-      const badge = document.getElementById("type-client-badge");
-      if (badge) badge.textContent = `Abonnement : ${type}`;
-    }
+      
 
     // 🧠 Pré-remplissage des champs
     await preRemplirFormulaire(uid);
