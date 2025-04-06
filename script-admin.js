@@ -1,4 +1,4 @@
-// script-admin.js – Gestion dynamique du Dashboard client selon abonnement
+// script-admin.js – Dashboard client avec infos de contact + horaires
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import {
@@ -8,7 +8,7 @@ import {
   getAuth, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
-// 🔧 Configuration Firebase
+// 🔧 Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBRIdIXj0IixLwASOgZsqka550gOAVr7_4",
   authDomain: "avwebcreation-admin.firebaseapp.com",
@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 🎯 Références des inputs
+// 🧩 Inputs des infos de contact
 const emailInput = document.getElementById("email");
 const phoneInput = document.getElementById("phone");
 const adresseInput = document.getElementById("adresse");
@@ -31,10 +31,9 @@ const lieuInput = document.getElementById("lieu");
 const saveBtn = document.getElementById("save");
 const message = document.getElementById("message");
 
-// 🔐 Authentification de l'utilisateur
+// 🔐 Authentification
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // 🚫 Redirection si non connecté
     window.location.href = "index.html";
     return;
   }
@@ -42,29 +41,25 @@ onAuthStateChanged(auth, async (user) => {
   const uid = user.uid;
 
   try {
-    // 🔎 Récupérer le type d'abonnement depuis la collection "users"
+    // Récupération du profil utilisateur
     const profilRef = doc(db, "users", uid);
     const profilSnap = await getDoc(profilRef);
 
     if (profilSnap.exists()) {
-      const userData = profilSnap.data();
-      const type = userData.typeClient ?? "basic";
-
-      // 🎨 Affichage conditionnel selon abonnement (à activer plus tard si besoin)
-      // Ex : if (type === "basic") { ... }
-
-      // 🧠 Pré-remplissage des champs
+      // Préremplissage
       await preRemplirFormulaire(uid);
+      await preRemplirHoraires(uid);
 
-      // 💾 Activation de la sauvegarde
+      // Sauvegardes
       activerSauvegarde(uid);
+      activerSauvegardeHoraires(uid);
     }
   } catch (error) {
     console.error("❌ Erreur chargement profil :", error);
   }
 });
 
-// 🧠 Remplir le formulaire avec les infos stockées
+// 📥 Pré-remplissage des infos de contact
 async function preRemplirFormulaire(uid) {
   try {
     const docRef = doc(db, "infos", uid);
@@ -83,7 +78,7 @@ async function preRemplirFormulaire(uid) {
   }
 }
 
-// 💾 Enregistrer les modifications dans Firestore
+// 💾 Sauvegarde des infos de contact
 function activerSauvegarde(uid) {
   if (!saveBtn) return;
 
@@ -108,6 +103,66 @@ function activerSauvegarde(uid) {
     } catch (error) {
       console.error("❌ Erreur Firestore :", error);
       message.textContent = "❌ Erreur de mise à jour";
+      message.style.color = "red";
+    }
+
+    setTimeout(() => {
+      message.textContent = "";
+    }, 3000);
+  });
+}
+
+// 📥 Pré-remplissage des horaires
+async function preRemplirHoraires(uid) {
+  const jours = [
+    "lundi", "mardi", "mercredi", "jeudi",
+    "vendredi", "samedi", "dimanche"
+  ];
+
+  try {
+    const docRef = doc(db, "horaires", uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+
+      jours.forEach(jour => {
+        const input = document.getElementById(`horaire-${jour}`);
+        if (input) input.value = data[jour] ?? "";
+      });
+    }
+  } catch (error) {
+    console.error("❌ Erreur chargement horaires :", error);
+  }
+}
+
+// 💾 Sauvegarde des horaires
+function activerSauvegardeHoraires(uid) {
+  const jours = [
+    "lundi", "mardi", "mercredi", "jeudi",
+    "vendredi", "samedi", "dimanche"
+  ];
+
+  const saveBtn = document.getElementById("save-horaires");
+  const message = document.getElementById("message-horaires");
+
+  if (!saveBtn) return;
+
+  saveBtn.addEventListener("click", async () => {
+    const horaires = {};
+
+    jours.forEach(jour => {
+      const input = document.getElementById(`horaire-${jour}`);
+      horaires[jour] = input?.value ?? "";
+    });
+
+    try {
+      await setDoc(doc(db, "horaires", uid), horaires);
+      message.textContent = "✅ Horaires enregistrés avec succès";
+      message.style.color = "green";
+    } catch (error) {
+      console.error("❌ Erreur sauvegarde horaires :", error);
+      message.textContent = "❌ Erreur lors de l'enregistrement";
       message.style.color = "red";
     }
 
