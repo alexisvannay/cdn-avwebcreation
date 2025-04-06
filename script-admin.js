@@ -50,15 +50,15 @@ onAuthStateChanged(auth, async (user) => {
       const userData = profilSnap.data();
       const type = userData.typeClient ?? "basic";
 
-      // 🎨 Afficher les sections selon le type d'abonnement
-      
+      // 🎨 Affichage conditionnel selon abonnement (à activer plus tard si besoin)
+      // Ex : if (type === "basic") { ... }
 
-    // 🧠 Pré-remplissage des champs
-    await preRemplirFormulaire(uid);
+      // 🧠 Pré-remplissage des champs
+      await preRemplirFormulaire(uid);
 
-    // 💾 Activation de la sauvegarde
-    activerSauvegarde(uid);
-
+      // 💾 Activation de la sauvegarde
+      activerSauvegarde(uid);
+    }
   } catch (error) {
     console.error("❌ Erreur chargement profil :", error);
   }
