@@ -1,8 +1,9 @@
-// script-client.js - Lecture des infos depuis Firestore (pour site public)
+// script-client.js – Lecture des infos depuis Firestore (public)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
+// ✅ Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBRIdIXj0IixLwASOgZsqka550gOAVr7_4",
   authDomain: "avwebcreation-admin.firebaseapp.com",
@@ -15,9 +16,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// 🔍 UID depuis la balise meta
 const metaUid = document.querySelector('meta[name="client-uid"]');
 if (!metaUid) {
-  console.error("⚠️ Aucun UID trouvé dans la balise <meta name='client-uid'>.");
+  console.error("❌ UID non trouvé dans la balise <meta name='client-uid'>");
 } else {
   const uid = metaUid.content;
 
@@ -26,21 +28,30 @@ if (!metaUid) {
       const docRef = doc(db, "infos", uid);
       const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const emailEl = document.getElementById("contact-email");
-        const phoneEl = document.getElementById("contact-phone");
-        const adresseEl = document.getElementById("contact-adresse");
-      
-        if (emailEl) emailEl.textContent = data.email ?? "Non défini";
-        if (phoneEl) phoneEl.textContent = data.phone ?? "Non défini";
-        if (adresseEl)
-          adresseEl.textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim();
-      } else {
-        console.log("Aucune donnée trouvée pour ce client.");
+      if (!docSnap.exists()) {
+        console.warn("Aucune donnée trouvée pour ce client.");
+        return;
       }
-    } catch (err) {
-      console.error("Erreur Firebase :", err);
+
+      const data = docSnap.data();
+
+      // Contact
+      document.getElementById("contact-email")!.textContent = data.email ?? "–";
+      document.getElementById("contact-phone")!.textContent = data.phone ?? "–";
+      document.getElementById("contact-adresse")!.textContent =
+        `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim() || "–";
+
+      // Horaires
+      const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+      jours.forEach(jour => {
+        const span = document.getElementById(`horaire-${jour}`);
+        if (span) {
+          span.textContent = data[`horaire_${jour}`] ?? "Fermé";
+        }
+      });
+
+    } catch (error) {
+      console.error("❌ Erreur de chargement Firestore :", error);
     }
   }
 
