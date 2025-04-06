@@ -36,10 +36,15 @@ if (!metaUid) {
       const data = docSnap.data();
 
       // Contact
-      document.getElementById("contact-email")!.textContent = data.email ?? "–";
-      document.getElementById("contact-phone")!.textContent = data.phone ?? "–";
-      document.getElementById("contact-adresse")!.textContent =
-        `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim() || "–";
+      const emailEl = document.getElementById("contact-email");
+      const phoneEl = document.getElementById("contact-phone");
+      const adresseEl = document.getElementById("contact-adresse");
+
+      if (emailEl) emailEl.textContent = data.email ?? "–";
+      if (phoneEl) phoneEl.textContent = data.phone ?? "–";
+      if (adresseEl) {
+        adresseEl.textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim() || "–";
+      }
 
       // Horaires
       const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
