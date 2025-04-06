@@ -34,12 +34,16 @@ const message = document.getElementById("message");
 // 🔐 Authentification
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // Laisser un peu de temps au cas où la session s'active
+    console.warn("⏳ Utilisateur non connecté... on attend un peu.");
     setTimeout(() => {
-      window.location.href = "index.html";
-    }, 1000);
+      if (!auth.currentUser) {
+        console.warn("❌ Toujours pas connecté, on redirige.");
+        window.location.href = "index.html";
+      }
+    }, 1500);
     return;
   }
+
 
   const uid = user.uid;
 
