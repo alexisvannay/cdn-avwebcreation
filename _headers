@@ -1,9 +1,9 @@
-/* 
-  Access-Control-Allow-Origin for all files
-*/
-/*
-  Active CORS pour tous les fichiers JS du CDN
-*/
+/script-admin.js
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET
+  Access-Control-Allow-Headers: Content-Type
+
+/script-client.js
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Methods: GET
   Access-Control-Allow-Headers: Content-Type
