@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 🧩 Inputs des infos de contact
+// 🎯 Références des éléments DOM
 const emailInput = document.getElementById("email");
 const phoneInput = document.getElementById("phone");
 const adresseInput = document.getElementById("adresse");
@@ -30,42 +30,33 @@ const codePostalInput = document.getElementById("codePostal");
 const lieuInput = document.getElementById("lieu");
 const saveBtn = document.getElementById("save");
 const message = document.getElementById("message");
+const saveHorairesBtn = document.getElementById("save-horaires");
+const messageHoraires = document.getElementById("message-horaires");
 
-// 🔐 Authentification
+// 🔐 Authentification de l'utilisateur
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    console.warn("⏳ Utilisateur non connecté... on attend un peu.");
+    console.warn("⏳ Utilisateur non connecté.");
     setTimeout(() => {
-      if (!auth.currentUser) {
-        console.warn("❌ Toujours pas connecté, on redirige.");
-        window.location.href = "index.html";
-      }
-    }, 1500);
+      window.location.href = "index.html";
+    }, 1200);
     return;
   }
 
-
   const uid = user.uid;
+  console.log("✅ Utilisateur connecté UID:", uid);
 
   try {
-    const profilRef = doc(db, "users", uid);
-    const profilSnap = await getDoc(profilRef);
-
-    if (profilSnap.exists()) {
-      // Préremplir les champs
-      await preRemplirFormulaire(uid);
-      await preRemplirHoraires(uid);
-
-      // Activer les boutons
-      activerSauvegarde(uid);
-      activerSauvegardeHoraires(uid);
-    }
-  } catch (error) {
-    console.error("❌ Erreur chargement profil :", error);
+    await preRemplirFormulaire(uid);
+    await preRemplirHoraires(uid);
+    activerSauvegarde(uid);
+    activerSauvegardeHoraires(uid);
+  } catch (err) {
+    console.error("❌ Erreur chargement des données :", err);
   }
 });
 
-// 📥 Pré-remplir formulaire contact
+// 📥 Pré-remplissage du formulaire contact
 async function preRemplirFormulaire(uid) {
   try {
     const docRef = doc(db, "infos", uid);
@@ -78,22 +69,25 @@ async function preRemplirFormulaire(uid) {
       if (adresseInput) adresseInput.value = data.adresse ?? "";
       if (codePostalInput) codePostalInput.value = data.codePostal ?? "";
       if (lieuInput) lieuInput.value = data.lieu ?? "";
+      console.log("📄 Données contact préremplies :", data);
+    } else {
+      console.log("ℹ️ Aucun document trouvé dans infos/ pour ce user.");
     }
   } catch (err) {
-    console.error("❌ Erreur chargement infos :", err);
+    console.error("❌ Erreur chargement infos contact :", err);
   }
 }
 
-// 💾 Sauvegarde infos contact
+// 💾 Sauvegarde des infos contact
 function activerSauvegarde(uid) {
   if (!saveBtn) return;
 
   saveBtn.addEventListener("click", async () => {
-    const email = emailInput.value;
-    const phone = phoneInput.value;
-    const adresse = adresseInput.value;
-    const codePostal = codePostalInput.value;
-    const lieu = lieuInput.value;
+    const email = emailInput.value.trim();
+    const phone = phoneInput.value.trim();
+    const adresse = adresseInput.value.trim();
+    const codePostal = codePostalInput.value.trim();
+    const lieu = lieuInput.value.trim();
 
     try {
       await setDoc(doc(db, "infos", uid), {
@@ -106,19 +100,18 @@ function activerSauvegarde(uid) {
 
       message.textContent = "✅ Infos mises à jour";
       message.style.color = "green";
+      console.log("✅ Infos contact enregistrées avec succès.");
     } catch (error) {
-      console.error("❌ Erreur Firestore :", error);
-      message.textContent = "❌ Erreur de mise à jour";
+      console.error("❌ Erreur Firestore lors de l'enregistrement des infos :", error);
+      message.textContent = "❌ Erreur lors de la mise à jour";
       message.style.color = "red";
     }
 
-    setTimeout(() => {
-      message.textContent = "";
-    }, 3000);
+    setTimeout(() => (message.textContent = ""), 3000);
   });
 }
 
-// 📥 Pré-remplir horaires
+// 📥 Pré-remplissage des horaires
 async function preRemplirHoraires(uid) {
   const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
@@ -132,22 +125,23 @@ async function preRemplirHoraires(uid) {
         const input = document.getElementById(`horaire-${jour}`);
         if (input) input.value = data[jour] ?? "";
       });
+      console.log("📄 Horaires préremplis :", data);
+    } else {
+      console.log("ℹ️ Aucun document trouvé dans horaires/ pour ce user.");
     }
   } catch (error) {
     console.error("❌ Erreur chargement horaires :", error);
   }
 }
 
-// 💾 Sauvegarde horaires
+// 💾 Sauvegarde des horaires
 function activerSauvegardeHoraires(uid) {
   const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
-  const saveBtn = document.getElementById("save-horaires");
-  const message = document.getElementById("message-horaires");
+  if (!saveHorairesBtn) return;
 
-  if (!saveBtn) return;
-
-  saveBtn.addEventListener("click", async () => {
+  saveHorairesBtn.addEventListener("click", async () => {
     const horaires = {};
+
     jours.forEach(jour => {
       const input = document.getElementById(`horaire-${jour}`);
       horaires[jour] = input?.value ?? "";
@@ -155,16 +149,15 @@ function activerSauvegardeHoraires(uid) {
 
     try {
       await setDoc(doc(db, "horaires", uid), horaires);
-      message.textContent = "✅ Horaires enregistrés avec succès";
-      message.style.color = "green";
+      messageHoraires.textContent = "✅ Horaires enregistrés avec succès";
+      messageHoraires.style.color = "green";
+      console.log("✅ Horaires mis à jour :", horaires);
     } catch (error) {
       console.error("❌ Erreur sauvegarde horaires :", error);
-      message.textContent = "❌ Erreur lors de l'enregistrement";
-      message.style.color = "red";
+      messageHoraires.textContent = "❌ Erreur lors de l'enregistrement";
+      messageHoraires.style.color = "red";
     }
 
-    setTimeout(() => {
-      message.textContent = "";
-    }, 3000);
+    setTimeout(() => (messageHoraires.textContent = ""), 3000);
   });
 }
