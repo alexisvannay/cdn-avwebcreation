@@ -25,38 +25,46 @@ if (!metaUid) {
 
   async function chargerInfosClient() {
     try {
-      const docRef = doc(db, "infos", uid);
-      const docSnap = await getDoc(docRef);
+      // 🔹 Chargement des infos de contact
+      const contactRef = doc(db, "infos", uid);
+      const contactSnap = await getDoc(contactRef);
 
-      if (!docSnap.exists()) {
-        console.warn("Aucune donnée trouvée pour ce client.");
-        return;
+      if (contactSnap.exists()) {
+        const data = contactSnap.data();
+        const emailEl = document.getElementById("contact-email");
+        const phoneEl = document.getElementById("contact-phone");
+        const adresseEl = document.getElementById("contact-adresse");
+
+        if (emailEl) emailEl.textContent = data.email ?? "–";
+        if (phoneEl) phoneEl.textContent = data.phone ?? "–";
+        if (adresseEl)
+          adresseEl.textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim() || "–";
+
+        console.log("✅ Données contact chargées :", data);
+      } else {
+        console.warn("ℹ️ Aucune info de contact trouvée.");
       }
 
-      const data = docSnap.data();
+      // 🔹 Chargement des horaires
+      const horairesRef = doc(db, "horaires", uid);
+      const horairesSnap = await getDoc(horairesRef);
 
-      // Contact
-      const emailEl = document.getElementById("contact-email");
-      const phoneEl = document.getElementById("contact-phone");
-      const adresseEl = document.getElementById("contact-adresse");
+      if (horairesSnap.exists()) {
+        const horaires = horairesSnap.data();
+        const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
-      if (emailEl) emailEl.textContent = data.email ?? "–";
-      if (phoneEl) phoneEl.textContent = data.phone ?? "–";
-      if (adresseEl) {
-        adresseEl.textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim() || "–";
+        jours.forEach(jour => {
+          const span = document.getElementById(`horaire-${jour}`);
+          if (span) span.textContent = horaires[jour] ?? "Fermé";
+        });
+
+        console.log("✅ Horaires chargés :", horaires);
+      } else {
+        console.warn("ℹ️ Aucun horaire trouvé.");
       }
-
-      // Horaires
-      const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
-      jours.forEach(jour => {
-        const span = document.getElementById(`horaire-${jour}`);
-        if (span) {
-          span.textContent = data[`horaire_${jour}`] ?? "Fermé";
-        }
-      });
 
     } catch (error) {
-      console.error("❌ Erreur de chargement Firestore :", error);
+      console.error("❌ Erreur chargement Firestore :", error);
     }
   }
 
