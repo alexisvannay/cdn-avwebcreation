@@ -1,4 +1,4 @@
-// script-admin.js - Dashboard multi-comptes sécurisé
+// script-admin.js - Dashboard client personnalisé (multi-abonnement)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import {
@@ -8,7 +8,7 @@ import {
   getAuth, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
-// 🔧 Configuration Firebase
+// 🔧 Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBRIdIXj0IixLwASOgZsqka550gOAVr7_4",
   authDomain: "avwebcreation-admin.firebaseapp.com",
@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 🎯 Ciblage des champs
+// 🧩 Ciblage des champs
 const emailInput = document.getElementById("email");
 const phoneInput = document.getElementById("phone");
 const adresseInput = document.getElementById("adresse");
@@ -31,7 +31,7 @@ const lieuInput = document.getElementById("lieu");
 const saveBtn = document.getElementById("save");
 const message = document.getElementById("message");
 
-// 🔁 Pré-remplissage des champs
+// 🧠 Pré-remplir les champs depuis Firestore
 async function preRemplirFormulaire(uid) {
   try {
     const docRef = doc(db, "infos", uid);
@@ -45,12 +45,12 @@ async function preRemplirFormulaire(uid) {
       if (codePostalInput) codePostalInput.value = data.codePostal ?? "";
       if (lieuInput) lieuInput.value = data.lieu ?? "";
     }
-  } catch (error) {
-    console.error("Erreur lors du pré-remplissage :", error);
+  } catch (err) {
+    console.error("❌ Erreur chargement infos :", err);
   }
 }
 
-// 💾 Enregistrement des données
+// 💾 Sauvegarder les modifications
 function activerSauvegarde(uid) {
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
@@ -69,11 +69,11 @@ function activerSauvegarde(uid) {
           lieu
         });
 
-        message.textContent = "✅ Informations enregistrées";
+        message.textContent = "✅ Infos enregistrées";
         message.style.color = "green";
       } catch (error) {
         console.error("❌ Erreur Firestore :", error);
-        message.textContent = "❌ Erreur lors de l'enregistrement";
+        message.textContent = "❌ Erreur de mise à jour";
         message.style.color = "red";
       }
 
@@ -84,15 +84,45 @@ function activerSauvegarde(uid) {
   }
 }
 
-// 🔐 Récupérer l'utilisateur connecté
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    const uid = user.uid;
+// 🔐 Authentification + chargement des droits
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    console.warn("Non connecté");
+    return;
+  }
+
+  const uid = user.uid;
+
+  try {
+    const profilRef = doc(db, "users", uid);
+    const profilSnap = await getDoc(profilRef);
+
+    if (profilSnap.exists()) {
+      const userData = profilSnap.data();
+      const type = userData.typeClient ?? "basic";
+
+      // Affichage dynamique des sections
+      if (type === "basic") {
+        document.getElementById("formulaire-contact")?.style.setProperty("display", "block");
+      } else if (type === "galerie") {
+        document.getElementById("formulaire-contact")?.style.setProperty("display", "block");
+        document.getElementById("formulaire-galerie")?.style.setProperty("display", "block");
+      } else if (type === "admin") {
+        document.querySelectorAll(".admin-section").forEach(el => el.style.setProperty("display", "block"));
+      } else {
+        document.getElementById("section-non-autorisee")?.style.setProperty("display", "block");
+      }
+
+      // Badge affiché sur le dashboard
+      const badge = document.getElementById("type-client-badge");
+      if (badge) badge.textContent = `Abonnement : ${type}`;
+    }
+
+    // Chargement et édition
     preRemplirFormulaire(uid);
     activerSauvegarde(uid);
-  } else {
-    console.warn("Utilisateur non connecté.");
-    // Optionnel : rediriger vers la page de login
-    // window.location.href = "index.html";
+
+  } catch (error) {
+    console.error("❌ Erreur chargement du profil :", error);
   }
 });
