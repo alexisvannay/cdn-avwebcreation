@@ -25,7 +25,7 @@ if (!metaUid) {
 
   async function chargerInfosClient() {
     try {
-      // 🔹 Chargement des infos de contact
+      // 🔹 Infos de contact
       const contactRef = doc(db, "infos", uid);
       const contactSnap = await getDoc(contactRef);
 
@@ -45,22 +45,30 @@ if (!metaUid) {
         console.warn("ℹ️ Aucune info de contact trouvée.");
       }
 
-      // 🔹 Chargement des horaires
-const horairesRef = doc(db, "horaires", uid);
-const horairesSnap = await getDoc(horairesRef);
+      // 🔹 Horaires
+      const horairesRef = doc(db, "horaires", uid);
+      const horairesSnap = await getDoc(horairesRef);
 
-if (horairesSnap.exists()) {
-  const horaires = horairesSnap.data();
-  const container = document.getElementById("liste-horaires");
-  container.innerHTML = ""; // vide la liste avant d’ajouter
+      if (horairesSnap.exists()) {
+        const horaires = horairesSnap.data();
+        const container = document.getElementById("liste-horaires");
+        container.innerHTML = ""; // vider la liste
 
-  Object.entries(horaires).forEach(([jour, horaire]) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<strong>${jour.charAt(0).toUpperCase() + jour.slice(1)} :</strong> ${horaire}`;
-    container.appendChild(li);
-  });
-}
+        Object.entries(horaires).forEach(([jour, horaire]) => {
+          const li = document.createElement("li");
+          li.innerHTML = `<strong>${jour.charAt(0).toUpperCase() + jour.slice(1)} :</strong> ${horaire}`;
+          container.appendChild(li);
+        });
 
+        console.log("✅ Horaires chargés :", horaires);
+      } else {
+        console.warn("ℹ️ Aucun horaire trouvé.");
+      }
+    } catch (error) {
+      console.error("❌ Erreur de chargement Firestore :", error);
+    }
+  }
 
+  // Appel de la fonction
   chargerInfosClient();
 }
