@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 🎯 Références DOM - contact
+// 🎯 Références DOM - Contact
 const emailInput = document.getElementById("email");
 const phoneInput = document.getElementById("phone");
 const adresseInput = document.getElementById("adresse");
@@ -31,7 +31,7 @@ const lieuInput = document.getElementById("lieu");
 const saveBtn = document.getElementById("save");
 const message = document.getElementById("message");
 
-// 🎯 Références DOM - horaires
+// 🎯 Références DOM - Horaires
 const saveHorairesBtn = document.getElementById("save-horaires");
 const messageHoraires = document.getElementById("message-horaires");
 let containerHoraires = document.getElementById("liste-horaires");
@@ -47,7 +47,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const uid = user.uid;
-  console.log("✅ Connecté en tant que :", uid);
+  console.log("✅ Connecté :", uid);
 
   try {
     await preRemplirFormulaire(uid);
@@ -55,7 +55,7 @@ onAuthStateChanged(auth, async (user) => {
     activerSauvegarde(uid);
     activerSauvegardeHoraires(uid);
   } catch (err) {
-    console.error("❌ Erreur lors du chargement initial :", err);
+    console.error("❌ Erreur au chargement initial :", err);
   }
 });
 
@@ -67,11 +67,11 @@ async function preRemplirFormulaire(uid) {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
-      if (emailInput) emailInput.value = data.email ?? "";
-      if (phoneInput) phoneInput.value = data.phone ?? "";
-      if (adresseInput) adresseInput.value = data.adresse ?? "";
-      if (codePostalInput) codePostalInput.value = data.codePostal ?? "";
-      if (lieuInput) lieuInput.value = data.lieu ?? "";
+      emailInput.value = data.email ?? "";
+      phoneInput.value = data.phone ?? "";
+      adresseInput.value = data.adresse ?? "";
+      codePostalInput.value = data.codePostal ?? "";
+      lieuInput.value = data.lieu ?? "";
     }
   } catch (err) {
     console.error("❌ Erreur chargement contact :", err);
@@ -92,7 +92,7 @@ function activerSauvegarde(uid) {
         lieu: lieuInput.value.trim()
       });
 
-      message.textContent = "✅ Informations enregistrées avec succès";
+      message.textContent = "✅ Informations mises à jour";
       message.style.color = "green";
     } catch (err) {
       console.error("❌ Erreur enregistrement contact :", err);
@@ -100,26 +100,20 @@ function activerSauvegarde(uid) {
       message.style.color = "red";
     }
 
-    setTimeout(() => message.textContent = "", 3000);
+    setTimeout(() => (message.textContent = ""), 3000);
   });
 }
 
-// 📥 Pré-remplissage des horaires dynamiques
+// 📥 Pré-remplissage des horaires
 async function preRemplirHoraires(uid) {
-  if (!containerHoraires) {
-    containerHoraires = document.createElement("div");
-    containerHoraires.id = "liste-horaires";
-    document.body.appendChild(containerHoraires);
-  }
-
   try {
     const docRef = doc(db, "horaires", uid);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
       const data = docSnap.data();
-      Object.entries(data).forEach(([jour, horaires]) => {
-        ajouterLigne(jour, horaires);
+      Object.entries(data).forEach(([jourPlage, horaires]) => {
+        ajouterLigne(jourPlage, horaires);
       });
     }
   } catch (err) {
@@ -127,71 +121,64 @@ async function preRemplirHoraires(uid) {
   }
 }
 
-// ➕ Ajout d’une ligne horaire
+// ➕ Ajouter une ligne horaire
 function ajouterLigne(jour = "", horaire = "") {
-  const div = document.createElement("div");
-  div.className = "horaire-ligne";
+  const ligne = document.createElement("div");
+  ligne.className = "horaire-ligne";
 
   const inputJour = document.createElement("input");
   inputJour.type = "text";
   inputJour.className = "jours";
-  inputJour.placeholder = "Jour (ex: Lundi)";
+  inputJour.placeholder = "Jour ou plage (ex: Lundi - Jeudi)";
   inputJour.value = jour;
 
   const inputHoraire = document.createElement("input");
   inputHoraire.type = "text";
   inputHoraire.className = "heures";
-  inputHoraire.placeholder = "Horaires (ex: 08h - 12h)";
+  inputHoraire.placeholder = "Horaires (ex: 08h - 12h, 13h30 - 17h)";
   inputHoraire.value = horaire;
 
   const removeBtn = document.createElement("button");
   removeBtn.textContent = "❌";
-  removeBtn.addEventListener("click", () => div.remove());
+  removeBtn.addEventListener("click", () => ligne.remove());
 
-  div.appendChild(inputJour);
-  div.appendChild(inputHoraire);
-  div.appendChild(removeBtn);
-  containerHoraires.appendChild(div);
+  ligne.appendChild(inputJour);
+  ligne.appendChild(inputHoraire);
+  ligne.appendChild(removeBtn);
+  containerHoraires.appendChild(ligne);
 }
 
-// 💾 Sauvegarde des horaires dynamiques (sans éclater les plages)
+// 💾 Sauvegarde des horaires
 function activerSauvegardeHoraires(uid) {
-  const saveBtn = document.getElementById("save-horaires");
-  const message = document.getElementById("message-horaires");
-  if (!saveBtn) return;
+  if (!saveHorairesBtn) return;
 
-  saveBtn.addEventListener("click", async () => {
+  saveHorairesBtn.addEventListener("click", async () => {
     const lignes = document.querySelectorAll("#liste-horaires .horaire-ligne");
     const horaires = {};
 
     lignes.forEach(div => {
-      const champJour = div.querySelector(".jours")?.value.trim();
-      const horaire = div.querySelector(".heures")?.value.trim();
-
-      if (champJour && horaire) {
-        horaires[champJour] = horaire;
+      const jour = div.querySelector(".jours")?.value.trim();
+      const heure = div.querySelector(".heures")?.value.trim();
+      if (jour && heure) {
+        horaires[jour] = heure;
       }
     });
 
     try {
-      await setDoc(doc(db, "horaires", uid), horaires); // Enregistrement tel quel
-      message.textContent = "✅ Horaires enregistrés";
-      message.style.color = "green";
-      console.log("✅ Horaires enregistrés :", horaires);
+      await setDoc(doc(db, "horaires", uid), horaires);
+      messageHoraires.textContent = "✅ Horaires enregistrés";
+      messageHoraires.style.color = "green";
     } catch (error) {
       console.error("❌ Erreur Firestore :", error);
-      message.textContent = "❌ Erreur de mise à jour";
-      message.style.color = "red";
+      messageHoraires.textContent = "❌ Erreur lors de la mise à jour";
+      messageHoraires.style.color = "red";
     }
 
-    setTimeout(() => {
-      message.textContent = "";
-    }, 3000);
+    setTimeout(() => (messageHoraires.textContent = ""), 3000);
   });
 }
 
-// à la toute fin du script-admin.js
+// ✅ Ajout de ligne manuelle
 document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
   ajouterLigne();
 });
-
