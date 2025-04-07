@@ -45,29 +45,31 @@ if (!metaUid) {
         console.warn("ℹ️ Aucune info de contact trouvée.");
       }
 
-      // 🔹 Horaires
-      const horairesRef = doc(db, "horaires", uid);
-      const horairesSnap = await getDoc(horairesRef);
+      // 🔹 Chargement des horaires
+const horairesRef = doc(db, "horaires", uid);
+const horairesSnap = await getDoc(horairesRef);
 
-      if (horairesSnap.exists()) {
-        const horaires = horairesSnap.data();
-        const container = document.getElementById("liste-horaires");
-        container.innerHTML = ""; // vider la liste
+if (horairesSnap.exists()) {
+  const horaires = horairesSnap.data();
+  const container = document.getElementById("liste-horaires");
+  container.innerHTML = ""; // vide la liste avant d’ajouter
 
-        Object.entries(horaires).forEach(([jour, horaire]) => {
-          const li = document.createElement("li");
-          li.innerHTML = `<strong>${jour.charAt(0).toUpperCase() + jour.slice(1)} :</strong> ${horaire}`;
-          container.appendChild(li);
-        });
+  const joursOrdre = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
-        console.log("✅ Horaires chargés :", horaires);
-      } else {
-        console.warn("ℹ️ Aucun horaire trouvé.");
-      }
-    } catch (error) {
-      console.error("❌ Erreur de chargement Firestore :", error);
+  joursOrdre.forEach(jour => {
+    const horaire = horaires[jour];
+    if (horaire) {
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${jour.charAt(0).toUpperCase() + jour.slice(1)} :</strong> ${horaire}`;
+      container.appendChild(li);
     }
-  }
+  });
+
+  console.log("✅ Horaires affichés dans le bon ordre :", horaires);
+} else {
+  console.warn("ℹ️ Aucun horaire trouvé.");
+}
+
 
   // Appel de la fonction
   chargerInfosClient();
