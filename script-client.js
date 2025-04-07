@@ -14,7 +14,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔍 Lire l'UID depuis le meta tag
+// 🔍 Lire l'UID depuis la balise meta
 const metaUid = document.querySelector('meta[name="client-uid"]');
 if (!metaUid) {
   console.error("❌ UID manquant dans la balise meta.");
@@ -34,7 +34,7 @@ if (!metaUid) {
         document.getElementById("contact-adresse").textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim();
       }
 
-      // 🕒 Chargement horaires SANS décomposition
+      // 🕒 Chargement horaires triés
       const horairesRef = doc(db, "horaires", uid);
       const horairesSnap = await getDoc(horairesRef);
 
@@ -43,7 +43,19 @@ if (!metaUid) {
         const container = document.getElementById("liste-horaires");
         container.innerHTML = "";
 
-        Object.entries(horaires).forEach(([plage, horaire]) => {
+        const ordreJours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+
+        const horairesTries = Object.entries(horaires).sort(([a], [b]) => {
+          const getIndex = (label) => {
+            for (let i = 0; i < ordreJours.length; i++) {
+              if (label.toLowerCase().includes(ordreJours[i])) return i;
+            }
+            return 99; // placer en bas si jour non reconnu
+          };
+          return getIndex(a) - getIndex(b);
+        });
+
+        horairesTries.forEach(([plage, horaire]) => {
           const li = document.createElement("li");
           li.innerHTML = `<strong>${plage.charAt(0).toUpperCase() + plage.slice(1)} :</strong> ${horaire}`;
           container.appendChild(li);
