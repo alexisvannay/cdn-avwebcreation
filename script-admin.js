@@ -163,12 +163,33 @@ function activerSauvegardeHoraires(uid) {
     const lignes = document.querySelectorAll(".horaire-ligne");
 
     lignes.forEach(div => {
-      const jour = div.querySelector(".jours")?.value.trim().toLowerCase();
-      const heure = div.querySelector(".heures")?.value.trim();
-      if (jour && heure) {
-        horaires[jour] = heure;
+  const champJour = div.querySelector(".jours")?.value.trim().toLowerCase();
+  const horaire = div.querySelector(".heures")?.value.trim();
+
+  if (!champJour || !horaire) return;
+
+  if (champJour.includes("-")) {
+    // Ex: "lundi - jeudi"
+    const [start, end] = champJour.split("-").map(j => j.trim());
+
+    const joursSemaine = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+    const startIndex = joursSemaine.indexOf(start);
+    const endIndex = joursSemaine.indexOf(end);
+
+    if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
+      for (let i = startIndex; i <= endIndex; i++) {
+        horaires[joursSemaine[i]] = horaire;
       }
-    });
+    } else {
+      // si la plage est invalide, on l'enregistre tel quel
+      horaires[champJour] = horaire;
+    }
+  } else {
+    // Jour unique
+    horaires[champJour] = horaire;
+  }
+});
+
 
     try {
       await setDoc(doc(db, "horaires", uid), horaires);
