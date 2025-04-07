@@ -111,53 +111,86 @@ function activerSauvegarde(uid) {
   });
 }
 
-// 📥 Pré-remplissage des horaires
+// 📥 Pré-remplissage dynamique
 async function preRemplirHoraires(uid) {
-  const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+  const horairesRef = doc(db, "horaires", uid);
+  const horairesSnap = await getDoc(horairesRef);
 
-  try {
-    const docRef = doc(db, "horaires", uid);
-    const docSnap = await getDoc(docRef);
+  if (horairesSnap.exists()) {
+    const horaires = horairesSnap.data();
+    const liste = document.getElementById("liste-horaires");
 
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      jours.forEach(jour => {
-        const input = document.getElementById(`horaire-${jour}`);
-        if (input) input.value = data[jour] ?? "";
-      });
-      console.log("📄 Horaires préremplis :", data);
-    } else {
-      console.log("ℹ️ Aucun document trouvé dans horaires/ pour ce user.");
-    }
-  } catch (error) {
-    console.error("❌ Erreur chargement horaires :", error);
+    Object.entries(horaires).forEach(([jour, horaire]) => {
+      ajouterLigne(jour, horaire);
+    });
   }
 }
 
-// 💾 Sauvegarde des horaires
-function activerSauvegardeHoraires(uid) {
-  const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
-  if (!saveHorairesBtn) return;
+// ➕ Ajouter une ligne d'horaire
+function ajouterLigne(jour = "", horaire = "") {
+  const container = document.getElementById("liste-horaires");
+  const div = document.createElement("div");
+  div.className = "horaire-ligne";
 
-  saveHorairesBtn.addEventListener("click", async () => {
+  const inputJour = document.createElement("input");
+  inputJour.type = "text";
+  inputJour.className = "jours";
+  inputJour.placeholder = "Jour (ex: Lundi)";
+  inputJour.value = jour;
+
+  const inputHoraire = document.createElement("input");
+  inputHoraire.type = "text";
+  inputHoraire.className = "heures";
+  inputHoraire.placeholder = "Horaires (ex: 08h00 - 12h00)";
+  inputHoraire.value = horaire;
+
+  const removeBtn = document.createElement("button");
+  removeBtn.textContent = "❌";
+  removeBtn.onclick = () => div.remove();
+
+  div.appendChild(inputJour);
+  div.appendChild(inputHoraire);
+  div.appendChild(removeBtn);
+  container.appendChild(div);
+}
+
+// 💾 Sauvegarde dynamique
+function activerSauvegardeHoraires(uid) {
+  const saveBtn = document.getElementById("save-horaires");
+  const message = document.getElementById("message-horaires");
+
+  if (!saveBtn) return;
+
+  saveBtn.addEventListener("click", async () => {
+    const lignes = document.querySelectorAll("#liste-horaires .horaire-ligne");
     const horaires = {};
 
-    jours.forEach(jour => {
-      const input = document.getElementById(`horaire-${jour}`);
-      horaires[jour] = input?.value ?? "";
+    lignes.forEach(div => {
+      const jour = div.querySelector(".jours")?.value.trim().toLowerCase();
+      const horaire = div.querySelector(".heures")?.value.trim();
+      if (jour && horaire) {
+        horaires[jour] = horaire;
+      }
     });
 
     try {
       await setDoc(doc(db, "horaires", uid), horaires);
-      messageHoraires.textContent = "✅ Horaires enregistrés avec succès";
-      messageHoraires.style.color = "green";
-      console.log("✅ Horaires mis à jour :", horaires);
+      message.textContent = "✅ Horaires enregistrés";
+      message.style.color = "green";
     } catch (error) {
-      console.error("❌ Erreur sauvegarde horaires :", error);
-      messageHoraires.textContent = "❌ Erreur lors de l'enregistrement";
-      messageHoraires.style.color = "red";
+      console.error("❌ Erreur Firestore :", error);
+      message.textContent = "❌ Erreur de mise à jour";
+      message.style.color = "red";
     }
 
-    setTimeout(() => (messageHoraires.textContent = ""), 3000);
+    setTimeout(() => {
+      message.textContent = "";
+    }, 3000);
   });
 }
+
+// ➕ Bouton ajouter
+document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
+  ajouterLigne();
+});
+
