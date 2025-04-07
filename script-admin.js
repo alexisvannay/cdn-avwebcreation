@@ -156,56 +156,54 @@ function ajouterLigne(jour = "", horaire = "") {
 
 // 💾 Sauvegarde des horaires dynamiques
 function activerSauvegardeHoraires(uid) {
-  if (!saveHorairesBtn) return;
+  const saveBtn = document.getElementById("save-horaires");
+  const message = document.getElementById("message-horaires");
+  if (!saveBtn) return;
 
-  saveHorairesBtn.addEventListener("click", async () => {
+  saveBtn.addEventListener("click", async () => {
+    const lignes = document.querySelectorAll("#liste-horaires .horaire-ligne");
     const horaires = {};
-    const lignes = document.querySelectorAll(".horaire-ligne");
+    const joursSemaine = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
     lignes.forEach(div => {
-  const champJour = div.querySelector(".jours")?.value.trim().toLowerCase();
-  const horaire = div.querySelector(".heures")?.value.trim();
+      const champJour = div.querySelector(".jours")?.value.trim().toLowerCase();
+      const horaire = div.querySelector(".heures")?.value.trim();
 
-  if (!champJour || !horaire) return;
+      if (!champJour || !horaire) return;
 
-  if (champJour.includes("-")) {
-    // Ex: "lundi - jeudi"
-    const [start, end] = champJour.split("-").map(j => j.trim());
+      if (champJour.includes("-")) {
+        // Ex: "lundi - jeudi"
+        const [start, end] = champJour.split("-").map(j => j.trim());
+        const startIndex = joursSemaine.indexOf(start);
+        const endIndex = joursSemaine.indexOf(end);
 
-    const joursSemaine = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
-    const startIndex = joursSemaine.indexOf(start);
-    const endIndex = joursSemaine.indexOf(end);
-
-    if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
-      for (let i = startIndex; i <= endIndex; i++) {
-        horaires[joursSemaine[i]] = horaire;
+        if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
+          for (let i = startIndex; i <= endIndex; i++) {
+            horaires[joursSemaine[i]] = horaire;
+          }
+        } else {
+          horaires[champJour] = horaire; // fallback si pas valide
+        }
+      } else {
+        // Jour unique
+        horaires[champJour] = horaire;
       }
-    } else {
-      // si la plage est invalide, on l'enregistre tel quel
-      horaires[champJour] = horaire;
-    }
-  } else {
-    // Jour unique
-    horaires[champJour] = horaire;
-  }
-});
-
+    });
 
     try {
-      await setDoc(doc(db, "horaires", uid), horaires);
-      messageHoraires.textContent = "✅ Horaires enregistrés avec succès";
-      messageHoraires.style.color = "green";
-    } catch (err) {
-      console.error("❌ Erreur Firestore :", err);
-      messageHoraires.textContent = "❌ Erreur lors de la sauvegarde";
-      messageHoraires.style.color = "red";
+      await setDoc(doc(db, "horaires", uid), horaires); // 🔁 overwrite complet
+      message.textContent = "✅ Horaires enregistrés";
+      message.style.color = "green";
+      console.log("✅ Horaires enregistrés :", horaires);
+    } catch (error) {
+      console.error("❌ Erreur Firestore :", error);
+      message.textContent = "❌ Erreur de mise à jour";
+      message.style.color = "red";
     }
 
-    setTimeout(() => messageHoraires.textContent = "", 3000);
+    setTimeout(() => {
+      message.textContent = "";
+    }, 3000);
   });
 }
 
-// ➕ Bouton "Ajouter une ligne"
-document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
-  ajouterLigne();
-});
