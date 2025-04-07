@@ -206,4 +206,8 @@ function activerSauvegardeHoraires(uid) {
     }, 3000);
   });
 }
+// à la toute fin du script-admin.js
+document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
+  ajouterLigne();
+});
 
