@@ -52,12 +52,12 @@ const horairesSnap = await getDoc(horairesRef);
 if (horairesSnap.exists()) {
   const horaires = horairesSnap.data();
   const container = document.getElementById("liste-horaires");
-  container.innerHTML = "";
+  container.innerHTML = ""; // vide la liste avant d’ajouter
 
   Object.entries(horaires).forEach(([jour, horaire]) => {
-    const p = document.createElement("p");
-    p.innerHTML = `<strong>${jour.charAt(0).toUpperCase() + jour.slice(1)} :</strong> ${horaire}`;
-    container.appendChild(p);
+    const li = document.createElement("li");
+    li.innerHTML = `<strong>${jour.charAt(0).toUpperCase() + jour.slice(1)} :</strong> ${horaire}`;
+    container.appendChild(li);
   });
 }
 
