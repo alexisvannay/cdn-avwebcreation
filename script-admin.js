@@ -154,7 +154,7 @@ function ajouterLigne(jour = "", horaire = "") {
   containerHoraires.appendChild(div);
 }
 
-// 💾 Sauvegarde des horaires dynamiques
+// 💾 Sauvegarde des horaires dynamiques (sans éclater les plages)
 function activerSauvegardeHoraires(uid) {
   const saveBtn = document.getElementById("save-horaires");
   const message = document.getElementById("message-horaires");
@@ -163,35 +163,18 @@ function activerSauvegardeHoraires(uid) {
   saveBtn.addEventListener("click", async () => {
     const lignes = document.querySelectorAll("#liste-horaires .horaire-ligne");
     const horaires = {};
-    const joursSemaine = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
     lignes.forEach(div => {
-      const champJour = div.querySelector(".jours")?.value.trim().toLowerCase();
+      const champJour = div.querySelector(".jours")?.value.trim();
       const horaire = div.querySelector(".heures")?.value.trim();
 
-      if (!champJour || !horaire) return;
-
-      if (champJour.includes("-")) {
-        // Ex: "lundi - jeudi"
-        const [start, end] = champJour.split("-").map(j => j.trim());
-        const startIndex = joursSemaine.indexOf(start);
-        const endIndex = joursSemaine.indexOf(end);
-
-        if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
-          for (let i = startIndex; i <= endIndex; i++) {
-            horaires[joursSemaine[i]] = horaire;
-          }
-        } else {
-          horaires[champJour] = horaire; // fallback si pas valide
-        }
-      } else {
-        // Jour unique
+      if (champJour && horaire) {
         horaires[champJour] = horaire;
       }
     });
 
     try {
-      await setDoc(doc(db, "horaires", uid), horaires); // 🔁 overwrite complet
+      await setDoc(doc(db, "horaires", uid), horaires); // Enregistrement tel quel
       message.textContent = "✅ Horaires enregistrés";
       message.style.color = "green";
       console.log("✅ Horaires enregistrés :", horaires);
@@ -206,6 +189,7 @@ function activerSauvegardeHoraires(uid) {
     }, 3000);
   });
 }
+
 // à la toute fin du script-admin.js
 document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
   ajouterLigne();
