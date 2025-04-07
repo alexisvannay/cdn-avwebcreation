@@ -1,4 +1,4 @@
-// script-admin.js – Dashboard client avec infos de contact + horaires
+// script-admin.js – Dashboard client avec infos de contact + horaires dynamiques
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import {
@@ -8,7 +8,7 @@ import {
   getAuth, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
-// 🔧 Config Firebase
+// 🔧 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBRIdIXj0IixLwASOgZsqka550gOAVr7_4",
   authDomain: "avwebcreation-admin.firebaseapp.com",
@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 🎯 Références des éléments DOM
+// 🎯 Références DOM - contact
 const emailInput = document.getElementById("email");
 const phoneInput = document.getElementById("phone");
 const adresseInput = document.getElementById("adresse");
@@ -30,21 +30,24 @@ const codePostalInput = document.getElementById("codePostal");
 const lieuInput = document.getElementById("lieu");
 const saveBtn = document.getElementById("save");
 const message = document.getElementById("message");
+
+// 🎯 Références DOM - horaires
 const saveHorairesBtn = document.getElementById("save-horaires");
 const messageHoraires = document.getElementById("message-horaires");
+let containerHoraires = document.getElementById("liste-horaires");
 
-// 🔐 Authentification de l'utilisateur
+// 🔐 Authentification utilisateur
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    console.warn("⏳ Utilisateur non connecté.");
+    console.warn("Utilisateur non connecté.");
     setTimeout(() => {
       window.location.href = "index.html";
-    }, 1200);
+    }, 1000);
     return;
   }
 
   const uid = user.uid;
-  console.log("✅ Utilisateur connecté UID:", uid);
+  console.log("✅ Connecté en tant que :", uid);
 
   try {
     await preRemplirFormulaire(uid);
@@ -52,11 +55,11 @@ onAuthStateChanged(auth, async (user) => {
     activerSauvegarde(uid);
     activerSauvegardeHoraires(uid);
   } catch (err) {
-    console.error("❌ Erreur chargement des données :", err);
+    console.error("❌ Erreur lors du chargement initial :", err);
   }
 });
 
-// 📥 Pré-remplissage du formulaire contact
+// 📥 Pré-remplissage infos de contact
 async function preRemplirFormulaire(uid) {
   try {
     const docRef = doc(db, "infos", uid);
@@ -69,66 +72,63 @@ async function preRemplirFormulaire(uid) {
       if (adresseInput) adresseInput.value = data.adresse ?? "";
       if (codePostalInput) codePostalInput.value = data.codePostal ?? "";
       if (lieuInput) lieuInput.value = data.lieu ?? "";
-      console.log("📄 Données contact préremplies :", data);
-    } else {
-      console.log("ℹ️ Aucun document trouvé dans infos/ pour ce user.");
     }
   } catch (err) {
-    console.error("❌ Erreur chargement infos contact :", err);
+    console.error("❌ Erreur chargement contact :", err);
   }
 }
 
-// 💾 Sauvegarde des infos contact
+// 💾 Sauvegarde infos contact
 function activerSauvegarde(uid) {
   if (!saveBtn) return;
 
   saveBtn.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
-    const phone = phoneInput.value.trim();
-    const adresse = adresseInput.value.trim();
-    const codePostal = codePostalInput.value.trim();
-    const lieu = lieuInput.value.trim();
-
     try {
       await setDoc(doc(db, "infos", uid), {
-        email,
-        phone,
-        adresse,
-        codePostal,
-        lieu
+        email: emailInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        adresse: adresseInput.value.trim(),
+        codePostal: codePostalInput.value.trim(),
+        lieu: lieuInput.value.trim()
       });
 
-      message.textContent = "✅ Infos mises à jour";
+      message.textContent = "✅ Informations enregistrées avec succès";
       message.style.color = "green";
-      console.log("✅ Infos contact enregistrées avec succès.");
-    } catch (error) {
-      console.error("❌ Erreur Firestore lors de l'enregistrement des infos :", error);
-      message.textContent = "❌ Erreur lors de la mise à jour";
+    } catch (err) {
+      console.error("❌ Erreur enregistrement contact :", err);
+      message.textContent = "❌ Erreur lors de l'enregistrement";
       message.style.color = "red";
     }
 
-    setTimeout(() => (message.textContent = ""), 3000);
+    setTimeout(() => message.textContent = "", 3000);
   });
 }
 
-// 📥 Pré-remplissage dynamique
+// 📥 Pré-remplissage des horaires dynamiques
 async function preRemplirHoraires(uid) {
-  const horairesRef = doc(db, "horaires", uid);
-  const horairesSnap = await getDoc(horairesRef);
+  if (!containerHoraires) {
+    containerHoraires = document.createElement("div");
+    containerHoraires.id = "liste-horaires";
+    document.body.appendChild(containerHoraires);
+  }
 
-  if (horairesSnap.exists()) {
-    const horaires = horairesSnap.data();
-    const liste = document.getElementById("liste-horaires");
+  try {
+    const docRef = doc(db, "horaires", uid);
+    const docSnap = await getDoc(docRef);
 
-    Object.entries(horaires).forEach(([jour, horaire]) => {
-      ajouterLigne(jour, horaire);
-    });
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      Object.entries(data).forEach(([jour, horaires]) => {
+        ajouterLigne(jour, horaires);
+      });
+    }
+  } catch (err) {
+    console.error("❌ Erreur chargement horaires :", err);
   }
 }
 
-// ➕ Ajouter une ligne d'horaire
+// ➕ Ajout d’une ligne horaire
 function ajouterLigne(jour = "", horaire = "") {
-  const container = document.getElementById("liste-horaires");
   const div = document.createElement("div");
   div.className = "horaire-ligne";
 
@@ -141,56 +141,50 @@ function ajouterLigne(jour = "", horaire = "") {
   const inputHoraire = document.createElement("input");
   inputHoraire.type = "text";
   inputHoraire.className = "heures";
-  inputHoraire.placeholder = "Horaires (ex: 08h00 - 12h00)";
+  inputHoraire.placeholder = "Horaires (ex: 08h - 12h)";
   inputHoraire.value = horaire;
 
   const removeBtn = document.createElement("button");
   removeBtn.textContent = "❌";
-  removeBtn.onclick = () => div.remove();
+  removeBtn.addEventListener("click", () => div.remove());
 
   div.appendChild(inputJour);
   div.appendChild(inputHoraire);
   div.appendChild(removeBtn);
-  container.appendChild(div);
+  containerHoraires.appendChild(div);
 }
 
-// 💾 Sauvegarde dynamique
+// 💾 Sauvegarde des horaires dynamiques
 function activerSauvegardeHoraires(uid) {
-  const saveBtn = document.getElementById("save-horaires");
-  const message = document.getElementById("message-horaires");
+  if (!saveHorairesBtn) return;
 
-  if (!saveBtn) return;
-
-  saveBtn.addEventListener("click", async () => {
-    const lignes = document.querySelectorAll("#liste-horaires .horaire-ligne");
+  saveHorairesBtn.addEventListener("click", async () => {
     const horaires = {};
+    const lignes = document.querySelectorAll(".horaire-ligne");
 
     lignes.forEach(div => {
       const jour = div.querySelector(".jours")?.value.trim().toLowerCase();
-      const horaire = div.querySelector(".heures")?.value.trim();
-      if (jour && horaire) {
-        horaires[jour] = horaire;
+      const heure = div.querySelector(".heures")?.value.trim();
+      if (jour && heure) {
+        horaires[jour] = heure;
       }
     });
 
     try {
       await setDoc(doc(db, "horaires", uid), horaires);
-      message.textContent = "✅ Horaires enregistrés";
-      message.style.color = "green";
-    } catch (error) {
-      console.error("❌ Erreur Firestore :", error);
-      message.textContent = "❌ Erreur de mise à jour";
-      message.style.color = "red";
+      messageHoraires.textContent = "✅ Horaires enregistrés avec succès";
+      messageHoraires.style.color = "green";
+    } catch (err) {
+      console.error("❌ Erreur Firestore :", err);
+      messageHoraires.textContent = "❌ Erreur lors de la sauvegarde";
+      messageHoraires.style.color = "red";
     }
 
-    setTimeout(() => {
-      message.textContent = "";
-    }, 3000);
+    setTimeout(() => messageHoraires.textContent = "", 3000);
   });
 }
 
-// ➕ Bouton ajouter
+// ➕ Bouton "Ajouter une ligne"
 document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
   ajouterLigne();
 });
-
