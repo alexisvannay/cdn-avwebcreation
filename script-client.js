@@ -46,27 +46,21 @@ if (!metaUid) {
       }
 
       // 🔹 Chargement des horaires
-      const horairesRef = doc(db, "horaires", uid);
-      const horairesSnap = await getDoc(horairesRef);
+const horairesRef = doc(db, "horaires", uid);
+const horairesSnap = await getDoc(horairesRef);
 
-      if (horairesSnap.exists()) {
-        const horaires = horairesSnap.data();
-        const jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+if (horairesSnap.exists()) {
+  const horaires = horairesSnap.data();
+  const container = document.getElementById("liste-horaires");
+  container.innerHTML = "";
 
-        jours.forEach(jour => {
-          const span = document.getElementById(`horaire-${jour}`);
-          if (span) span.textContent = horaires[jour] ?? "Fermé";
-        });
+  Object.entries(horaires).forEach(([jour, horaire]) => {
+    const p = document.createElement("p");
+    p.innerHTML = `<strong>${jour.charAt(0).toUpperCase() + jour.slice(1)} :</strong> ${horaire}`;
+    container.appendChild(p);
+  });
+}
 
-        console.log("✅ Horaires chargés :", horaires);
-      } else {
-        console.warn("ℹ️ Aucun horaire trouvé.");
-      }
-
-    } catch (error) {
-      console.error("❌ Erreur chargement Firestore :", error);
-    }
-  }
 
   chargerInfosClient();
 }
