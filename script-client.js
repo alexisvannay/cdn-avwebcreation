@@ -57,11 +57,15 @@ if (!metaUid) {
         const joursOrdre = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
 
         joursOrdre.forEach(jour => {
-          const horaire = horaires[jour] ?? "Fermé";
+          let horaire = horaires[jour];
+          if (!horaire || horaire.trim() === "") {
+            horaire = "Fermé";
+          }
           const li = document.createElement("li");
           li.innerHTML = `<strong>${jour.charAt(0).toUpperCase() + jour.slice(1)} :</strong> ${horaire}`;
           container.appendChild(li);
         });
+
 
         console.log("✅ Horaires affichés dans le bon ordre :", horaires);
       } else {
