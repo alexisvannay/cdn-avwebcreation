@@ -1,22 +1,4 @@
-// script-admin.js – Dashboard client avec infos de contact + horaires dynamiques
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import {
-  getFirestore, doc, getDoc, setDoc
-} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-import {
-  getAuth, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-
-// 🔧 Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyBRIdIXj0IixLwASOgZsqka550gOAVr7_4",
-  authDomain: "avwebcreation-admin.firebaseapp.com",
-  projectId: "avwebcreation-admin",
-  storageBucket: "avwebcreation-admin.firebasestorage.app",
-  messagingSenderId: "293089525298",
-  appId: "1:293089525298:web:68ff4408a175909699862b"
-};
+// ... toutes tes imports Firebase (inchangées)
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -34,7 +16,6 @@ const message = document.getElementById("message");
 // 🎯 Références DOM - Horaires
 const saveHorairesBtn = document.getElementById("save-horaires");
 const messageHoraires = document.getElementById("message-horaires");
-let containerHoraires = document.getElementById("liste-horaires");
 
 // 🔐 Authentification utilisateur
 onAuthStateChanged(auth, async (user) => {
@@ -121,8 +102,14 @@ async function preRemplirHoraires(uid) {
   }
 }
 
-// ➕ Ajouter une ligne horaire
+// ➕ Ajouter une ligne horaire (corrigée)
 function ajouterLigne(jour = "", horaire = "") {
+  let container = document.getElementById("liste-horaires");
+  if (!container) {
+    console.error("❌ Élément #liste-horaires introuvable.");
+    return;
+  }
+
   const ligne = document.createElement("div");
   ligne.className = "horaire-ligne";
 
@@ -145,7 +132,7 @@ function ajouterLigne(jour = "", horaire = "") {
   ligne.appendChild(inputJour);
   ligne.appendChild(inputHoraire);
   ligne.appendChild(removeBtn);
-  containerHoraires.appendChild(ligne);
+  container.appendChild(ligne);
 }
 
 // 💾 Sauvegarde des horaires
@@ -178,7 +165,7 @@ function activerSauvegardeHoraires(uid) {
   });
 }
 
-// ✅ Ajout de ligne manuelle
+// ✅ Bouton ajouter une ligne
 document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
   ajouterLigne();
 });
