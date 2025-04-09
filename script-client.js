@@ -29,9 +29,18 @@ if (!metaUid) {
 
       if (contactSnap.exists()) {
         const data = contactSnap.data();
-        document.getElementById("contact-email").textContent = data.email ?? "–";
-        document.getElementById("contact-phone").textContent = data.phone ?? "–";
-        document.getElementById("contact-adresse").textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim();
+        document.querySelectorAll(".contact-email").forEach(el => {
+          el.textContent = data.email ?? "–";
+        });
+        
+        document.querySelectorAll(".contact-phone").forEach(el => {
+          el.textContent = data.phone ?? "–";
+        });
+        
+        document.querySelectorAll(".contact-adresse").forEach(el => {
+          el.textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim() || "–";
+        });
+
       }
 
       // 🕒 Chargement horaires triés
