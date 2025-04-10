@@ -1,13 +1,16 @@
-// ✅ IMPORTS Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import {
-  getFirestore, doc, getDoc, setDoc
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 import {
-  getAuth, onAuthStateChanged
+  getAuth,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
-// ✅ Configuration Firebase (tu l’avais oubliée)
+// ✅ Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBRIdIXj0IixLwASOgZsqka550gOAVr7_4",
   authDomain: "avwebcreation-admin.firebaseapp.com",
@@ -17,10 +20,11 @@ const firebaseConfig = {
   appId: "1:293089525298:web:68ff4408a175909699862b"
 };
 
-// ✅ Initialisation Firebase
-const app = initializeApp(firebaseConfig);
+// ✅ Empêche l'initialisation multiple
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 const auth = getAuth(app);
+
 
 // 🎯 Références DOM - Contact
 const emailInput = document.getElementById("email");
