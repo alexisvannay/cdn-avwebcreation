@@ -1,5 +1,4 @@
-// ... toutes tes imports Firebase (inchangées)
-// 📦 Imports Firebase
+// ✅ IMPORTS Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc
@@ -8,6 +7,17 @@ import {
   getAuth, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
+// ✅ Configuration Firebase (tu l’avais oubliée)
+const firebaseConfig = {
+  apiKey: "AIzaSyBRIdIXj0IixLwASOgZsqka550gOAVr7_4",
+  authDomain: "avwebcreation-admin.firebaseapp.com",
+  projectId: "avwebcreation-admin",
+  storageBucket: "avwebcreation-admin.appspot.com",
+  messagingSenderId: "293089525298",
+  appId: "1:293089525298:web:68ff4408a175909699862b"
+};
+
+// ✅ Initialisation Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -110,9 +120,9 @@ async function preRemplirHoraires(uid) {
   }
 }
 
-// ➕ Ajouter une ligne horaire (corrigée)
+// ➕ Ajouter une ligne horaire
 function ajouterLigne(jour = "", horaire = "") {
-  let container = document.getElementById("liste-horaires");
+  const container = document.getElementById("liste-horaires");
   if (!container) {
     console.error("❌ Élément #liste-horaires introuvable.");
     return;
@@ -173,7 +183,7 @@ function activerSauvegardeHoraires(uid) {
   });
 }
 
-// ✅ Bouton ajouter une ligne
+// ✅ Bouton "ajouter une ligne"
 document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
   ajouterLigne();
 });
