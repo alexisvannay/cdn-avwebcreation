@@ -71,6 +71,35 @@ if (!metaUid) {
         });
       }
 
+
+      // 🌟 Chargement des infos page d'accueil
+const accueilRef = doc(db, "accueil", uid);
+const accueilSnap = await getDoc(accueilRef);
+
+if (accueilSnap.exists()) {
+  const data = accueilSnap.data();
+
+  // Mise à jour du texte d’accueil
+  const elTexte = document.querySelector(".texte-accueil");
+  if (elTexte && data.texte) {
+    elTexte.textContent = data.texte;
+  }
+
+  // Mise à jour de l’image de fond
+  const sectionAccueil = document.querySelector(".accueil");
+  if (sectionAccueil) {
+  const imageUrl = data.image
+    ? data.image
+    : "images/accueil.avif"; // 
+
+  sectionAccueil.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${imageUrl})`;
+  sectionAccueil.style.backgroundSize = "cover";
+  sectionAccueil.style.backgroundPosition = "center";
+  sectionAccueil.style.backgroundRepeat = "no-repeat";
+}
+
+}
+
     } catch (error) {
       console.error("❌ Erreur de chargement :", error);
     }
