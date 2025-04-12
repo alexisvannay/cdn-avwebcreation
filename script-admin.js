@@ -55,6 +55,9 @@ onAuthStateChanged(auth, async (user) => {
   try {
     await preRemplirFormulaire(uid);
     await preRemplirHoraires(uid);
+    await chargerAccueil(uid);
+    activerSauvegardeAccueil(uid);
+
     activerSauvegarde(uid);
     activerSauvegardeHoraires(uid);
   } catch (err) {
@@ -191,3 +194,59 @@ function activerSauvegardeHoraires(uid) {
 document.getElementById("ajouter-ligne")?.addEventListener("click", () => {
   ajouterLigne();
 });
+
+
+
+
+// 🎯 Références DOM - Accueil
+const inputTexteAccueil = document.getElementById("texteAccueil");
+const inputImageFichier = document.getElementById("imageAccueilFichier");
+const inputImageURL = document.getElementById("imageAccueilURL");
+const saveAccueilBtn = document.getElementById("save-accueil");
+const messageAccueil = document.getElementById("message-accueil");
+
+// 📥 Chargement du contenu de la page d'accueil
+async function chargerAccueil(uid) {
+  try {
+    const accueilRef = doc(db, "accueil", uid);
+    const accueilSnap = await getDoc(accueilRef);
+
+    if (accueilSnap.exists()) {
+      const data = accueilSnap.data();
+      if (inputTexteAccueil) inputTexteAccueil.value = data.texte || "";
+      if (inputImageURL) inputImageURL.value = data.image || "";
+    }
+  } catch (err) {
+    console.error("❌ Erreur chargement accueil :", err);
+  }
+}
+
+// 💾 Sauvegarde page d'accueil
+function activerSauvegardeAccueil(uid) {
+  if (!saveAccueilBtn) return;
+
+  saveAccueilBtn.addEventListener("click", async () => {
+    const texte = inputTexteAccueil?.value.trim();
+    const imageURL = inputImageURL?.value.trim();
+
+    // On pourrait aussi gérer le fichier uploadé via Storage ici
+
+    try {
+      await setDoc(doc(db, "accueil", uid), {
+        texte,
+        image: imageURL
+      });
+
+      messageAccueil.textContent = "✅ Accueil mis à jour";
+      messageAccueil.style.color = "green";
+    } catch (error) {
+      console.error("❌ Erreur sauvegarde accueil :", error);
+      messageAccueil.textContent = "❌ Erreur de mise à jour";
+      messageAccueil.style.color = "red";
+    }
+
+    setTimeout(() => {
+      messageAccueil.textContent = "";
+    }, 3000);
+  });
+}
