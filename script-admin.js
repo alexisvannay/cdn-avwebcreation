@@ -10,6 +10,14 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
+// 🆕 Import pour Storage
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
+
 // ✅ Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBRIdIXj0IixLwASOgZsqka550gOAVr7_4",
@@ -24,6 +32,9 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// 🆕 Initialisation du Storage
+const storage = getStorage(app);
 
 
 // 🎯 Références DOM - Contact
@@ -249,34 +260,46 @@ async function chargerLogo(uid) {
 
 
 // 💾 Sauvegarde page d'accueil
-function activerSauvegardeAccueil(uid) {
-  if (!saveAccueilBtn) return;
+function activerSauvegardeLogo(uid) {
+  if (!boutonSauvegardeLogo) return;
 
-  saveAccueilBtn.addEventListener("click", async () => {
-    const texte = inputTexteAccueil?.value.trim();
-    const imageURL = inputImageURL?.value.trim();
-
-    // On pourrait aussi gérer le fichier uploadé via Storage ici
+  boutonSauvegardeLogo.addEventListener("click", async () => {
+    const texte1 = inputTexteLogo1?.value.trim();
+    const texte2 = inputTexteLogo2?.value.trim();
+    const fichier = inputLogoFichier?.files[0]; // le fichier logo choisi
+    let urlLogo = "";
 
     try {
-      await setDoc(doc(db, "accueil", uid), {
-        texte,
-        image: imageURL
+      // 📤 Upload image si un fichier est sélectionné
+      if (fichier) {
+        const chemin = `logos/${uid}/logo.png`;
+        const refLogo = ref(storage, chemin);
+        await uploadBytes(refLogo, fichier);
+        urlLogo = await getDownloadURL(refLogo);
+      }
+
+      // 💾 Enregistrement dans Firestore
+      await setDoc(doc(db, "logo", uid), {
+        texte1,
+        texte2,
+        urlLogo
       });
 
-      messageAccueil.textContent = "✅ Accueil mis à jour";
-      messageAccueil.style.color = "green";
-    } catch (error) {
-      console.error("❌ Erreur sauvegarde accueil :", error);
-      messageAccueil.textContent = "❌ Erreur de mise à jour";
-      messageAccueil.style.color = "red";
+      boutonSauvegardeLogo.textContent = "✅ Enregistré !";
+      boutonSauvegardeLogo.style.backgroundColor = "green";
+    } catch (err) {
+      console.error("❌ Erreur sauvegarde logo :", err);
+      boutonSauvegardeLogo.textContent = "❌ Erreur";
+      boutonSauvegardeLogo.style.backgroundColor = "red";
     }
 
     setTimeout(() => {
-      messageAccueil.textContent = "";
+      boutonSauvegardeLogo.textContent = "Enregistrer";
+      boutonSauvegardeLogo.style.backgroundColor = "";
     }, 3000);
   });
 }
+
 
 function activerSauvegardeLogo(uid) {
   if (!boutonSauvegardeLogo) return;
