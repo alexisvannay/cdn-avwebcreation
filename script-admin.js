@@ -39,6 +39,15 @@ const message = document.getElementById("message");
 const saveHorairesBtn = document.getElementById("save-horaires");
 const messageHoraires = document.getElementById("message-horaires");
 
+
+// références logo
+// 🎯 Références DOM - Logo
+const inputTexteLogo1 = document.getElementById("texteLogo1");
+const inputTexteLogo2 = document.getElementById("texteLogo2");
+const inputLogoFichier = document.getElementById("logoFichier");
+const boutonSauvegardeLogo = document.getElementById("save-logo");
+
+
 // 🔐 Authentification utilisateur
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -56,10 +65,12 @@ onAuthStateChanged(auth, async (user) => {
     await preRemplirFormulaire(uid);
     await preRemplirHoraires(uid);
     await chargerAccueil(uid);
-    activerSauvegardeAccueil(uid);
+    await chargerLogo(uid);
 
     activerSauvegarde(uid);
     activerSauvegardeHoraires(uid);
+    activerSauvegardeAccueil(uid);
+    activerSauvegardeLogo(uid);
   } catch (err) {
     console.error("❌ Erreur au chargement initial :", err);
   }
@@ -221,6 +232,22 @@ async function chargerAccueil(uid) {
   }
 }
 
+async function chargerLogo(uid) {
+  try {
+    const docRef = doc(db, "logo", uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (inputTexteLogo1) inputTexteLogo1.value = data.texte1 || "";
+      if (inputTexteLogo2) inputTexteLogo2.value = data.texte2 || "";
+    }
+  } catch (error) {
+    console.error("❌ Erreur chargement logo :", error);
+  }
+}
+
+
 // 💾 Sauvegarde page d'accueil
 function activerSauvegardeAccueil(uid) {
   if (!saveAccueilBtn) return;
@@ -250,3 +277,33 @@ function activerSauvegardeAccueil(uid) {
     }, 3000);
   });
 }
+
+function activerSauvegardeLogo(uid) {
+  if (!boutonSauvegardeLogo) return;
+
+  boutonSauvegardeLogo.addEventListener("click", async () => {
+    const texte1 = inputTexteLogo1?.value.trim();
+    const texte2 = inputTexteLogo2?.value.trim();
+
+    try {
+      await setDoc(doc(db, "logo", uid), {
+        texte1,
+        texte2
+        // plus tard : urlLogo: ...
+      });
+
+      boutonSauvegardeLogo.textContent = "✅ Enregistré !";
+      boutonSauvegardeLogo.style.backgroundColor = "green";
+    } catch (err) {
+      console.error("❌ Erreur sauvegarde logo :", err);
+      boutonSauvegardeLogo.textContent = "❌ Erreur";
+      boutonSauvegardeLogo.style.backgroundColor = "red";
+    }
+
+    setTimeout(() => {
+      boutonSauvegardeLogo.textContent = "Enregistrer";
+      boutonSauvegardeLogo.style.backgroundColor = "";
+    }, 3000);
+  });
+}
+
