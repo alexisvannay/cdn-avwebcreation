@@ -260,17 +260,46 @@ async function chargerLogo(uid) {
 
 
 // 💾 Sauvegarde page d'accueil
+function activerSauvegardeAccueil(uid) {
+  if (!saveAccueilBtn) return;
+
+  saveAccueilBtn.addEventListener("click", async () => {
+    const texte = inputTexteAccueil?.value.trim();
+    const imageURL = inputImageURL?.value.trim();
+
+    try {
+      await setDoc(doc(db, "accueil", uid), {
+        texte,
+        image: imageURL
+      });
+
+      messageAccueil.textContent = "✅ Accueil mis à jour";
+      messageAccueil.style.color = "green";
+    } catch (error) {
+      console.error("❌ Erreur sauvegarde accueil :", error);
+      messageAccueil.textContent = "❌ Erreur de mise à jour";
+      messageAccueil.style.color = "red";
+    }
+
+    setTimeout(() => {
+      messageAccueil.textContent = "";
+    }, 3000);
+  });
+}
+
+
+// 💾 Sauvegarde du logo (textes + image)
 function activerSauvegardeLogo(uid) {
   if (!boutonSauvegardeLogo) return;
 
   boutonSauvegardeLogo.addEventListener("click", async () => {
     const texte1 = inputTexteLogo1?.value.trim();
     const texte2 = inputTexteLogo2?.value.trim();
-    const fichier = inputLogoFichier?.files[0]; // le fichier logo choisi
+    const fichier = inputLogoFichier?.files[0];
     let urlLogo = "";
 
     try {
-      // 📤 Upload image si un fichier est sélectionné
+      // 📤 Si un fichier est sélectionné, on l'upload sur Firebase Storage
       if (fichier) {
         const chemin = `logos/${uid}/logo.png`;
         const refLogo = ref(storage, chemin);
@@ -278,7 +307,7 @@ function activerSauvegardeLogo(uid) {
         urlLogo = await getDownloadURL(refLogo);
       }
 
-      // 💾 Enregistrement dans Firestore
+      // 🔥 On enregistre les textes et l'URL de l'image dans Firestore
       await setDoc(doc(db, "logo", uid), {
         texte1,
         texte2,
@@ -299,4 +328,3 @@ function activerSauvegardeLogo(uid) {
     }, 3000);
   });
 }
-
