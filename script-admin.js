@@ -300,33 +300,3 @@ function activerSauvegardeLogo(uid) {
   });
 }
 
-
-function activerSauvegardeLogo(uid) {
-  if (!boutonSauvegardeLogo) return;
-
-  boutonSauvegardeLogo.addEventListener("click", async () => {
-    const texte1 = inputTexteLogo1?.value.trim();
-    const texte2 = inputTexteLogo2?.value.trim();
-
-    try {
-      await setDoc(doc(db, "logo", uid), {
-        texte1,
-        texte2
-        // plus tard : urlLogo: ...
-      });
-
-      boutonSauvegardeLogo.textContent = "✅ Enregistré !";
-      boutonSauvegardeLogo.style.backgroundColor = "green";
-    } catch (err) {
-      console.error("❌ Erreur sauvegarde logo :", err);
-      boutonSauvegardeLogo.textContent = "❌ Erreur";
-      boutonSauvegardeLogo.style.backgroundColor = "red";
-    }
-
-    setTimeout(() => {
-      boutonSauvegardeLogo.textContent = "Enregistrer";
-      boutonSauvegardeLogo.style.backgroundColor = "";
-    }, 3000);
-  });
-}
-
