@@ -75,15 +75,30 @@ if (!metaUid) {
       }
 
       // 🖋️ Chargement du logo
-      const logoRef = doc(db, "logo", uid);
-      const logoSnap = await getDoc(logoRef);
-      if (logoSnap.exists()) {
-        const logoData = logoSnap.data();
-        const logo1 = document.querySelector(".logo1");
-        const logo2 = document.querySelector(".logo2");
-        if (logo1) logo1.textContent = logoData.texte1 || "";
-        if (logo2) logo2.textContent = logoData.texte2 || "";
-      }
+      // 🔵 Chargement logo image + textes
+const logoRef = doc(db, "logo", uid);
+const logoSnap = await getDoc(logoRef);
+
+if (logoSnap.exists()) {
+  const logoData = logoSnap.data();
+
+  // ✅ Texte
+  document.querySelectorAll(".logo1").forEach(el => {
+    el.textContent = logoData.texte1 ?? "";
+  });
+  document.querySelectorAll(".logo2").forEach(el => {
+    el.textContent = logoData.texte2 ?? "";
+  });
+
+  // ✅ Image
+  if (logoData.urlLogo) {
+    const logoImage = document.querySelector(".logo img");
+    if (logoImage) {
+      logoImage.src = logoData.urlLogo;
+    }
+  }
+}
+
 
     } catch (error) {
       console.error("❌ Erreur de chargement :", error);
