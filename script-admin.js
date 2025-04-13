@@ -36,6 +36,7 @@ const saveHorairesBtn = document.getElementById("save-horaires");
 const messageHoraires = document.getElementById("message-horaires");
 const inputTexteLogo1 = document.getElementById("texteLogo1");
 const inputTexteLogo2 = document.getElementById("texteLogo2");
+const inputLogoFichier = document.getElementById("logoFichier");
 const boutonSauvegardeLogo = document.getElementById("save-logo");
 const inputLogoURL = document.getElementById("logoURL");
 const inputTexteAccueil = document.getElementById("texteAccueil");
