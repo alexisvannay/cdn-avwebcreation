@@ -69,6 +69,9 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+    console.log("Utilisateur connecté :", user); // <= Ajoute cette ligne
+
+
   const uid = user.uid;
   console.log("✅ Connecté :", uid);
 
