@@ -61,6 +61,8 @@ const boutonSauvegardeLogo = document.getElementById("save-logo");
 
 // 🔐 Authentification utilisateur
 onAuthStateChanged(auth, async (user) => {
+  console.log("✅ Utilisateur connecté (via onAuthStateChanged) :", user);
+  console.log("🟡 getAuth().currentUser :", getAuth().currentUser);
   if (!user) {
     console.warn("Utilisateur non connecté.");
     setTimeout(() => {
