@@ -310,6 +310,8 @@ function activerSauvegardeLogo(uid) {
         const refLogo = ref(storage, chemin);
         await uploadBytes(refLogo, fichier);
         urlLogo = await getDownloadURL(refLogo);
+        console.log("🔗 URL du logo :", urlLogo);
+
       }
 
       // 🔥 On enregistre les textes et l'URL de l'image dans Firestore
