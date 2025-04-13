@@ -11,12 +11,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
 // 🆕 Import pour Storage
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
+
 
 // ✅ Configuration Firebase
 const firebaseConfig = {
@@ -33,8 +28,6 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 🆕 Initialisation du Storage
-const storage = getStorage(app);
 
 
 // 🎯 Références DOM - Contact
@@ -300,21 +293,9 @@ function activerSauvegardeLogo(uid) {
   boutonSauvegardeLogo.addEventListener("click", async () => {
     const texte1 = inputTexteLogo1?.value.trim();
     const texte2 = inputTexteLogo2?.value.trim();
-    const fichier = inputLogoFichier?.files[0];
-    let urlLogo = "";
+    const urlLogo = document.getElementById("logoURL")?.value.trim(); // 🔁 Nouveau champ texte
 
     try {
-      // 📤 Si un fichier est sélectionné, on l'upload sur Firebase Storage
-      if (fichier) {
-        const chemin = `logos/${uid}/logo.png`;
-        const refLogo = ref(storage, chemin);
-        await uploadBytes(refLogo, fichier);
-        urlLogo = await getDownloadURL(refLogo);
-        console.log("🔗 URL du logo :", urlLogo);
-
-      }
-
-      // 🔥 On enregistre les textes et l'URL de l'image dans Firestore
       await setDoc(doc(db, "logo", uid), {
         texte1,
         texte2,
@@ -335,6 +316,7 @@ function activerSauvegardeLogo(uid) {
     }, 3000);
   });
 }
+
 
 console.log("Utilisateur connecté :", auth.currentUser);
 
