@@ -145,6 +145,23 @@ inputImageFichier?.addEventListener("change", () => {
   reader.readAsDataURL(fichier);
 });
 
+
+// 🔄 Met à jour automatiquement l’URL du logo si un fichier est sélectionné
+inputLogoFichier?.addEventListener("change", () => {
+  const fichier = inputLogoFichier.files[0];
+  if (!fichier) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const logoURLInput = document.getElementById("logoURL");
+    if (logoURLInput) {
+      logoURLInput.value = e.target.result; // base64 data:image/... automatiquement
+    }
+  };
+  reader.readAsDataURL(fichier);
+});
+
+
 async function chargerAccueil(uid) {
   const snap = await getDoc(doc(db, "accueil", uid));
   if (snap.exists()) {
