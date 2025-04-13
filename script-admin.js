@@ -328,3 +328,6 @@ function activerSauvegardeLogo(uid) {
     }, 3000);
   });
 }
+
+console.log("Utilisateur connecté :", auth.currentUser);
+
