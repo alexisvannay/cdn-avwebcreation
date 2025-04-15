@@ -107,7 +107,8 @@ if (logoSnap.exists()) {
 
 }
 
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   chargerInfosClient();
 });
-}
