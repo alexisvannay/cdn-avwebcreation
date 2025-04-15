@@ -11,38 +11,42 @@ const firebaseConfig = {
   appId: "1:293089525298:web:68ff4408a175909699862b"
 };
 
+// 🔥 Initialisation Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔍 Lire l'UID depuis la balise meta
+// ✅ Lire l'UID depuis la balise meta
+let uid = null;
 const metaUid = document.querySelector('meta[name="client-uid"]');
-if (!metaUid) {
-  console.error("❌ UID manquant dans la balise meta.");
+if (metaUid) {
+  uid = metaUid.content;
 } else {
-  const uid = metaUid.content;
+  console.error("❌ UID manquant dans la balise meta.");
+}
 
-  async function chargerInfosClient() {
-    try {
-      // ✅ Infos de contact
-      const contactRef = doc(db, "infos", uid);
-      const contactSnap = await getDoc(contactRef);
-      if (contactSnap.exists()) {
-        const data = contactSnap.data();
-        document.querySelectorAll(".contact-email").forEach(el => el.textContent = data.email ?? "–");
-        document.querySelectorAll(".contact-phone").forEach(el => el.textContent = data.phone ?? "–");
-        document.querySelectorAll(".contact-adresse").forEach(el => {
-          el.textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim() || "–";
-        });
-      }
+// 🧠 Fonction principale
+async function chargerInfosClient() {
+  try {
+    // 🔹 Infos de contact
+    const contactRef = doc(db, "infos", uid);
+    const contactSnap = await getDoc(contactRef);
+    if (contactSnap.exists()) {
+      const data = contactSnap.data();
+      document.querySelectorAll(".contact-email").forEach(el => el.textContent = data.email ?? "–");
+      document.querySelectorAll(".contact-phone").forEach(el => el.textContent = data.phone ?? "–");
+      document.querySelectorAll(".contact-adresse").forEach(el => {
+        el.textContent = `${data.adresse ?? ""}, ${data.codePostal ?? ""} ${data.lieu ?? ""}`.trim() || "–";
+      });
+    }
 
-      // 🕒 Horaires (triés)
-      const horairesRef = doc(db, "horaires", uid);
-      const horairesSnap = await getDoc(horairesRef);
-      if (horairesSnap.exists()) {
-        const horaires = horairesSnap.data();
-        const container = document.getElementById("liste-horaires");
+    // 🔹 Horaires (triés)
+    const horairesRef = doc(db, "horaires", uid);
+    const horairesSnap = await getDoc(horairesRef);
+    if (horairesSnap.exists()) {
+      const horaires = horairesSnap.data();
+      const container = document.getElementById("liste-horaires");
+      if (container) {
         container.innerHTML = "";
-
         const ordreJours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
         const horairesTries = Object.entries(horaires).sort(([a], [b]) => {
           const getIndex = (label) => ordreJours.findIndex(j => label.toLowerCase().includes(j));
@@ -55,60 +59,48 @@ if (!metaUid) {
           container.appendChild(li);
         });
       }
+    }
 
-      // 🏠 Texte + Image d’accueil
-      const accueilRef = doc(db, "accueil", uid);
-      const accueilSnap = await getDoc(accueilRef);
-      if (accueilSnap.exists()) {
-        const data = accueilSnap.data();
-        const elTexte = document.querySelector(".texte-accueil");
-        if (elTexte && data.texte) elTexte.textContent = data.texte;
+    // 🔹 Page d'accueil
+    const accueilRef = doc(db, "accueil", uid);
+    const accueilSnap = await getDoc(accueilRef);
+    if (accueilSnap.exists()) {
+      const data = accueilSnap.data();
+      const elTexte = document.querySelector(".texte-accueil");
+      if (elTexte && data.texte) elTexte.textContent = data.texte;
 
-        const sectionAccueil = document.querySelector(".accueil");
-        if (sectionAccueil) {
-          const imageUrl = data.image || "images/accueil.avif";
-          sectionAccueil.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${imageUrl})`;
-          sectionAccueil.style.backgroundSize = "cover";
-          sectionAccueil.style.backgroundPosition = "center";
-          sectionAccueil.style.backgroundRepeat = "no-repeat";
-        }
+      const sectionAccueil = document.querySelector(".accueil");
+      if (sectionAccueil) {
+        const imageUrl = data.image || "images/accueil.avif";
+        sectionAccueil.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${imageUrl})`;
+        sectionAccueil.style.backgroundSize = "cover";
+        sectionAccueil.style.backgroundPosition = "center";
+        sectionAccueil.style.backgroundRepeat = "no-repeat";
       }
-
-      // 🖋️ Chargement du logo
-      // 🔵 Chargement logo image + textes
-const logoRef = doc(db, "logo", uid);
-const logoSnap = await getDoc(logoRef);
-
-if (logoSnap.exists()) {
-  const logoData = logoSnap.data();
-
-  // ✅ Texte
-  document.querySelectorAll(".logo1").forEach(el => {
-    el.textContent = logoData.texte1 ?? "";
-  });
-  document.querySelectorAll(".logo2").forEach(el => {
-    el.textContent = logoData.texte2 ?? "";
-  });
-
-  // ✅ Image
-  if (logoData.urlLogo) {
-    const logoImage = document.querySelector(".logo img");
-    if (logoImage) {
-      logoImage.src = logoData.urlLogo;
     }
+
+    // 🔹 Logo (textes + image)
+    const logoRef = doc(db, "logo", uid);
+    const logoSnap = await getDoc(logoRef);
+    if (logoSnap.exists()) {
+      const logoData = logoSnap.data();
+      document.querySelectorAll(".logo1").forEach(el => el.textContent = logoData.texte1 ?? "");
+      document.querySelectorAll(".logo2").forEach(el => el.textContent = logoData.texte2 ?? "");
+
+      if (logoData.urlLogo) {
+        const logoImage = document.querySelector(".logo img");
+        if (logoImage) logoImage.src = logoData.urlLogo;
+      }
+    }
+
+  } catch (error) {
+    console.error("❌ Erreur de chargement :", error);
   }
 }
 
-
-    } catch (error) {
-      console.error("❌ Erreur de chargement :", error);
-    }
-  }
-
-}
-
-
-
+// 🚀 Lancer la fonction après chargement du DOM
 document.addEventListener("DOMContentLoaded", () => {
-  chargerInfosClient();
+  if (uid) {
+    chargerInfosClient();
+  }
 });
