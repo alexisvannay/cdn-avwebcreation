@@ -110,7 +110,7 @@ function ajouterLigne(j = "", h = "") {
   div.className = "horaire-ligne";
   div.innerHTML = `<input class="jours" placeholder="Jour ou plage" value="${j}">
                    <input class="heures" placeholder="Horaires" value="${h}">
-                   <button>🗑</button>`;
+                   <button class="bouton-supprimer-ligne">🗑</button>`;
   div.querySelector("button").addEventListener("click", () => div.remove());
   container?.appendChild(div);
 }
