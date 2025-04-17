@@ -57,11 +57,15 @@ onAuthStateChanged(auth, async (user) => {
   await preRemplirHoraires(uid);
   await chargerAccueil(uid);
   await chargerLogo(uid);
+  await chargerPresentation(uid);
+
 
   activerSauvegarde(uid);
   activerSauvegardeHoraires(uid);
   activerSauvegardeAccueil(uid);
   activerSauvegardeLogo(uid);
+  activerSauvegardePresentation(uid);
+
 });
 
 async function preRemplirFormulaire(uid) {
@@ -215,5 +219,63 @@ function activerSauvegardeLogo(uid) {
       boutonSauvegardeLogo.textContent = "Enregistrer";
       boutonSauvegardeLogo.style.backgroundColor = "";
     }, 3000);
+  });
+}
+
+
+// 🎯 Références DOM - Présentation
+const inputTextePresentation1 = document.getElementById("textePresentation1");
+const inputTextePresentation2 = document.getElementById("textePresentation2");
+const inputImagePresentationURL1 = document.getElementById("imagePresentationURL1");
+const inputImagePresentationURL2 = document.getElementById("imagePresentationURL2");
+const inputImageFichier1 = document.getElementById("imagePresentationFichier1");
+const inputImageFichier2 = document.getElementById("imagePresentationFichier2");
+const boutonSavePresentation = document.getElementById("save-presentation");
+const messagePresentation = document.getElementById("message-presentation");
+
+// 🔁 Convertit l’image en base64 et la met dans le champ texte
+[inputImageFichier1, inputImageFichier2].forEach((input, i) => {
+  input?.addEventListener("change", () => {
+    const fichier = input.files[0];
+    if (!fichier) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (i === 0) inputImagePresentationURL1.value = e.target.result;
+      else inputImagePresentationURL2.value = e.target.result;
+    };
+    reader.readAsDataURL(fichier);
+  });
+});
+
+// 📥 Charger la présentation si elle existe
+async function chargerPresentation(uid) {
+  const snap = await getDoc(doc(db, "presentation", uid));
+  if (snap.exists()) {
+    const d = snap.data();
+    inputTextePresentation1.value = d.texte1 || "";
+    inputImagePresentationURL1.value = d.image1 || "";
+    inputTextePresentation2.value = d.texte2 || "";
+    inputImagePresentationURL2.value = d.image2 || "";
+  }
+}
+
+// 💾 Sauvegarde de la présentation
+function activerSauvegardePresentation(uid) {
+  boutonSavePresentation?.addEventListener("click", async () => {
+    const texte1 = inputTextePresentation1?.value.trim();
+    const texte2 = inputTextePresentation2?.value.trim();
+    const image1 = inputImagePresentationURL1?.value.trim();
+    const image2 = inputImagePresentationURL2?.value.trim();
+
+    try {
+      await setDoc(doc(db, "presentation", uid), { texte1, image1, texte2, image2 });
+      messagePresentation.textContent = "✅ Présentation enregistrée";
+      messagePresentation.style.color = "green";
+    } catch {
+      messagePresentation.textContent = "❌ Erreur de sauvegarde";
+      messagePresentation.style.color = "red";
+    }
+
+    setTimeout(() => messagePresentation.textContent = "", 3000);
   });
 }
