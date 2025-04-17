@@ -133,12 +133,6 @@ async function chargerInfosClient() {
   } catch (error) {
     console.error("❌ Erreur de chargement :", error);
   }
-
-    }
-
-  } catch (error) {
-    console.error("❌ Erreur de chargement :", error);
-  }
 }
 
 // 🚀 Lancer la fonction après chargement du DOM
