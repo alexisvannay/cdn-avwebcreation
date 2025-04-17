@@ -79,20 +79,7 @@ async function chargerInfosClient() {
       }
     }
 
-    // 🔹 Logo (textes + image)
-    const logoRef = doc(db, "logo", uid);
-    const logoSnap = await getDoc(logoRef);
-    if (logoSnap.exists()) {
-      const logoData = logoSnap.data();
-      document.querySelectorAll(".logo1").forEach(el => el.textContent = logoData.texte1 ?? "");
-      document.querySelectorAll(".logo2").forEach(el => el.textContent = logoData.texte2 ?? "");
-
-      if (logoData.urlLogo) {
-        const logoImage = document.querySelector(".logo img");
-        if (logoImage) logoImage.src = logoData.urlLogo;
-      }
-
-      // ... autres parties déjà présentes ...
+    
 
     // 🔹 Logo (textes + image)
     const logoRef = doc(db, "logo", uid);
