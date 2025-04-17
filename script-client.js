@@ -91,6 +91,49 @@ async function chargerInfosClient() {
         const logoImage = document.querySelector(".logo img");
         if (logoImage) logoImage.src = logoData.urlLogo;
       }
+
+      // ... autres parties déjà présentes ...
+
+    // 🔹 Logo (textes + image)
+    const logoRef = doc(db, "logo", uid);
+    const logoSnap = await getDoc(logoRef);
+    if (logoSnap.exists()) {
+      const logoData = logoSnap.data();
+      document.querySelectorAll(".logo1").forEach(el => el.textContent = logoData.texte1 ?? "");
+      document.querySelectorAll(".logo2").forEach(el => el.textContent = logoData.texte2 ?? "");
+
+      if (logoData.urlLogo) {
+        const logoImage = document.querySelector(".logo img");
+        if (logoImage) logoImage.src = logoData.urlLogo;
+      }
+    }
+
+    // 🔹 Présentation
+    const presentationRef = doc(db, "presentation", uid);
+    const presentationSnap = await getDoc(presentationRef);
+    if (presentationSnap.exists()) {
+      const data = presentationSnap.data();
+
+      // Texte
+      document.querySelectorAll(".texte-presentation-1").forEach(el => {
+        el.textContent = data.texte1 ?? "";
+      });
+      document.querySelectorAll(".texte-presentation-2").forEach(el => {
+        el.textContent = data.texte2 ?? "";
+      });
+
+      // Images
+      const img1 = document.querySelector(".image-presentation-1");
+      const img2 = document.querySelector(".image-presentation-2");
+
+      if (img1 && data.image1) img1.src = data.image1;
+      if (img2 && data.image2) img2.src = data.image2;
+    }
+
+  } catch (error) {
+    console.error("❌ Erreur de chargement :", error);
+  }
+
     }
 
   } catch (error) {
