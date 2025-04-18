@@ -307,14 +307,39 @@ async function chargerGalerie(uid) {
     if (Array.isArray(data.images)) {
       imagesTemp = [...data.images];
       listeImages.innerHTML = "";
-      data.images.forEach(url => {
-        const img = document.createElement("img");
-        img.src = url;
-        img.style.maxHeight = "100px";
-        img.style.margin = "6px";
-        img.style.borderRadius = "4px";
-        listeImages.appendChild(img);
-      });
+      data.images.forEach((url, index) => {
+  const container = document.createElement("div");
+  container.style.position = "relative";
+  container.style.display = "inline-block";
+  container.style.margin = "6px";
+
+  const img = document.createElement("img");
+  img.src = url;
+  img.style.maxHeight = "100px";
+  img.style.borderRadius = "4px";
+
+  const btn = document.createElement("button");
+  btn.textContent = "🗑";
+  btn.style.position = "absolute";
+  btn.style.top = "2px";
+  btn.style.right = "2px";
+  btn.style.background = "rgba(0,0,0,0.6)";
+  btn.style.color = "white";
+  btn.style.border = "none";
+  btn.style.borderRadius = "50%";
+  btn.style.cursor = "pointer";
+
+  btn.addEventListener("click", () => {
+    imagesTemp = imagesTemp.filter(imgUrl => imgUrl !== url);
+    container.remove();
+  });
+
+  container.appendChild(img);
+  container.appendChild(btn);
+  listeImages.appendChild(container);
+});
+
+
     }
   }
 }
@@ -340,12 +365,37 @@ function activerSauvegardeGalerie(uid) {
     if (!url) return;
 
     imagesTemp.push(url);
-    const img = document.createElement("img");
-    img.src = url;
-    img.style.maxHeight = "100px";
-    img.style.margin = "6px";
-    img.style.borderRadius = "4px";
-    listeImages.appendChild(img);
+    const container = document.createElement("div");
+container.style.position = "relative";
+container.style.display = "inline-block";
+container.style.margin = "6px";
+
+const img = document.createElement("img");
+img.src = url;
+img.style.maxHeight = "100px";
+img.style.borderRadius = "4px";
+
+const btn = document.createElement("button");
+btn.textContent = "🗑";
+btn.style.position = "absolute";
+btn.style.top = "2px";
+btn.style.right = "2px";
+btn.style.background = "rgba(0,0,0,0.6)";
+btn.style.color = "white";
+btn.style.border = "none";
+btn.style.borderRadius = "50%";
+btn.style.cursor = "pointer";
+
+btn.addEventListener("click", () => {
+  imagesTemp = imagesTemp.filter(imgUrl => imgUrl !== url);
+  container.remove();
+});
+
+container.appendChild(img);
+container.appendChild(btn);
+listeImages.prepend(container);
+
+
 
     imageInput.value = "";
     imageURLInput.value = "";
