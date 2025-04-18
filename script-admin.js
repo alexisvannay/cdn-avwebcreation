@@ -385,7 +385,7 @@ btn.style.right = "2px";
 btn.style.background = "#ff3636";
 btn.style.color = "white";
 btn.style.border = "none";
-btn.style.borderRadius = "10px";
+btn.style.borderRadius = "1px";
 btn.style.cursor = "pointer";
 
 btn.addEventListener("click", () => {
