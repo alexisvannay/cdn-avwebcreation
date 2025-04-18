@@ -319,7 +319,8 @@ async function chargerGalerie(uid) {
   img.style.borderRadius = "4px";
 
   const btn = document.createElement("button");
-  btn.textContent = "🗑";
+  btn.textContent = "supprimer";
+  btn.style.fontSize = "10px";
   btn.style.position = "absolute";
   btn.style.top = "2px";
   btn.style.right = "2px";
