@@ -45,6 +45,17 @@ const inputImageURL = document.getElementById("imageAccueilURL");
 const saveAccueilBtn = document.getElementById("save-accueil");
 const messageAccueil = document.getElementById("message-accueil");
 
+
+
+const imageInput = document.getElementById("imageGalerieFichier");
+const imageURLInput = document.getElementById("imageGalerieURL");
+const ajouterBtn = document.getElementById("ajouter-image-galerie");
+const enregistrerBtn = document.getElementById("enregistrer-galerie");
+const messageGalerie = document.getElementById("message-galerie");
+const listeImages = document.getElementById("liste-images-galerie");
+
+let imagesTemp = [];
+
 // 🔐 Auth
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -58,13 +69,15 @@ onAuthStateChanged(auth, async (user) => {
   await chargerAccueil(uid);
   await chargerLogo(uid);
   await chargerPresentation(uid);
-
+  await chargerGalerie(uid);
 
   activerSauvegarde(uid);
   activerSauvegardeHoraires(uid);
   activerSauvegardeAccueil(uid);
   activerSauvegardeLogo(uid);
   activerSauvegardePresentation(uid);
+  activerSauvegardeGalerie(uid);
+
 
 });
 
@@ -279,3 +292,71 @@ function activerSauvegardePresentation(uid) {
     setTimeout(() => messagePresentation.textContent = "", 3000);
   });
 }
+
+
+
+
+
+
+
+// 📥 Charger la galerie si elle existe
+async function chargerGalerie(uid) {
+  const snap = await getDoc(doc(db, "galerie", uid));
+  if (snap.exists()) {
+    const data = snap.data();
+    if (Array.isArray(data.images)) {
+      imagesTemp = [...data.images];
+      listeImages.innerHTML = "";
+      data.images.forEach(url => {
+        const img = document.createElement("img");
+        img.src = url;
+        img.style.maxHeight = "100px";
+        img.style.margin = "6px";
+        img.style.borderRadius = "4px";
+        listeImages.appendChild(img);
+      });
+    }
+  }
+}
+
+// 💾 Sauvegarde de la galerie
+function activerSauvegardeGalerie(uid) {
+  enregistrerBtn?.addEventListener("click", async () => {
+    try {
+      await setDoc(doc(db, "galerie", uid), { images: imagesTemp });
+      messageGalerie.textContent = "✅ Galerie enregistrée";
+      messageGalerie.style.color = "green";
+    } catch (err) {
+      console.error(err);
+      messageGalerie.textContent = "❌ Erreur d'enregistrement";
+      messageGalerie.style.color = "red";
+    }
+
+    setTimeout(() => (messageGalerie.textContent = ""), 3000);
+  });
+
+  ajouterBtn?.addEventListener("click", () => {
+    const url = imageURLInput.value.trim();
+    if (!url) return;
+
+    imagesTemp.push(url);
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.maxHeight = "100px";
+    img.style.margin = "6px";
+    img.style.borderRadius = "4px";
+    listeImages.appendChild(img);
+
+    imageInput.value = "";
+    imageURLInput.value = "";
+  });
+
+  imageInput?.addEventListener("change", () => {
+    const fichier = imageInput.files[0];
+    if (!fichier) return;
+    const reader = new FileReader();
+    reader.onload = e => imageURLInput.value = e.target.result;
+    reader.readAsDataURL(fichier);
+  });
+}
+
