@@ -126,5 +126,78 @@ async function chargerInfosClient() {
 document.addEventListener("DOMContentLoaded", () => {
   if (uid) {
     chargerInfosClient();
+    chargerGalerie(); // 👈 on ajoute ça
   }
 });
+
+
+async function chargerGalerie() {
+  try {
+    const galerieRef = doc(db, "galerie", uid);
+    const galerieSnap = await getDoc(galerieRef);
+
+    if (galerieSnap.exists()) {
+      const data = galerieSnap.data();
+      if (Array.isArray(data.images)) {
+        const container = document.querySelector(".galerie");
+        if (!container) return;
+
+        container.innerHTML = ""; // on vide au cas où
+
+        data.images.forEach((url, index) => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.className = "img-galerie";
+          img.setAttribute("data-index", index);
+          container.appendChild(img);
+        });
+
+        initLightbox(data.images); // active la lightbox
+      }
+    }
+  } catch (err) {
+    console.error("❌ Erreur chargement galerie :", err);
+  }
+}
+
+function initLightbox(images) {
+  const lightbox = document.querySelector(".lightbox");
+  const lightboxImg = document.querySelector(".lightbox-img");
+  const closeBtn = document.querySelector(".lightbox .close");
+  const prevBtn = document.getElementById("prev");
+  const nextBtn = document.getElementById("next");
+
+  let currentIndex = 0;
+
+  document.querySelectorAll(".img-galerie").forEach((img, i) => {
+    img.addEventListener("click", () => {
+      currentIndex = i;
+      showImage();
+      lightbox.style.display = "flex";
+    });
+  });
+
+  function showImage() {
+    lightboxImg.src = images[currentIndex];
+  }
+
+  closeBtn?.addEventListener("click", () => {
+    lightbox.style.display = "none";
+  });
+
+  nextBtn?.addEventListener("click", () => {
+    currentIndex = (currentIndex + 1) % images.length;
+    showImage();
+  });
+
+  prevBtn?.addEventListener("click", () => {
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    showImage();
+  });
+
+  // Fermer avec la touche ÉCHAP
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") lightbox.style.display = "none";
+  });
+}
+
