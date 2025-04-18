@@ -144,13 +144,11 @@ async function chargerGalerie() {
 
         container.innerHTML = ""; // on vide au cas où
 
-        data.images.forEach((url, index) => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.className = "img-galerie";
-          img.setAttribute("data-index", index);
-          container.appendChild(img);
-        });
+        [...data.images].reverse().forEach(url => {
+            const img = document.createElement("img");
+            ...
+            listeImages.appendChild(img);
+          });
 
         initLightbox(data.images); // active la lightbox
       }
