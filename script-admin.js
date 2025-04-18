@@ -323,7 +323,7 @@ async function chargerGalerie(uid) {
   btn.style.position = "absolute";
   btn.style.top = "2px";
   btn.style.right = "2px";
-  btn.style.background = "rgba(0,0,0,0.6)";
+  btn.style.background = "red";
   btn.style.color = "white";
   btn.style.border = "none";
   btn.style.borderRadius = "50%";
