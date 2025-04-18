@@ -376,13 +376,14 @@ img.style.maxHeight = "100px";
 img.style.borderRadius = "4px";
 
 const btn = document.createElement("button");
-btn.textContent = "🗑";
+btn.textContent = "supprimer";
+btn.style.fontSize = "12px";
 btn.style.position = "absolute";
 btn.style.top = "2px";
 btn.style.right = "2px";
 btn.style.background = "#ff3636";
 btn.style.color = "white";
-btn.style.border = "solid 1px black";
+btn.style.border = "none";
 btn.style.borderRadius = "50%";
 btn.style.cursor = "pointer";
 
