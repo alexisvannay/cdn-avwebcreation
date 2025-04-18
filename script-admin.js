@@ -382,7 +382,7 @@ btn.style.top = "2px";
 btn.style.right = "2px";
 btn.style.background = "#ff3636";
 btn.style.color = "white";
-btn.style.border = "none";
+btn.style.border = "solid 1px black";
 btn.style.borderRadius = "50%";
 btn.style.cursor = "pointer";
 
