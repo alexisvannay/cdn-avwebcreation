@@ -142,21 +142,25 @@ async function chargerGalerie() {
         const container = document.querySelector(".galerie");
         if (!container) return;
 
-        container.innerHTML = ""; // on vide au cas où
+        container.innerHTML = "";
 
-        [...data.images].reverse().forEach(url => {
-            const img = document.createElement("img");
-            ...
-            listeImages.appendChild(img);
-          });
+        // Afficher les dernières images en premier
+        [...data.images].reverse().forEach((url, index) => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.className = "img-galerie";
+          img.setAttribute("data-index", index);
+          container.appendChild(img);
+        });
 
-        initLightbox(data.images); // active la lightbox
+        initLightbox(data.images);
       }
     }
   } catch (err) {
     console.error("❌ Erreur chargement galerie :", err);
   }
 }
+
 
 function initLightbox(images) {
   const lightbox = document.querySelector(".lightbox");
