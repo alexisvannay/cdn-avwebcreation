@@ -81,7 +81,6 @@ onAuthStateChanged(auth, async (user) => {
   activerSauvegardeAccueil(uid);
   activerSauvegardeLogo(uid);
   activerSauvegardePresentation(uid);
-  activerSauvegardeGalerie(uid);
   activerAjoutImage(uid);
 
 });
