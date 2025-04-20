@@ -3,7 +3,13 @@ import {
   getFirestore,
   doc,
   getDoc,
-  setDoc
+  setDoc,
+  collection,
+  addDoc,
+  deleteDoc,
+  getDocs,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 import {
   getAuth,
@@ -23,7 +29,6 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 const auth = getAuth(app);
-
 // 📌 DOM
 const emailInput = document.getElementById("email");
 const phoneInput = document.getElementById("phone");
@@ -50,10 +55,8 @@ const messageAccueil = document.getElementById("message-accueil");
 const imageInput = document.getElementById("imageGalerieFichier");
 const imageURLInput = document.getElementById("imageGalerieURL");
 const ajouterBtn = document.getElementById("ajouter-image-galerie");
-const enregistrerBtn = document.getElementById("enregistrer-galerie");
 const messageGalerie = document.getElementById("message-galerie");
 const listeImages = document.getElementById("liste-images-galerie");
-
 let imagesTemp = [];
 
 // 🔐 Auth
@@ -69,7 +72,9 @@ onAuthStateChanged(auth, async (user) => {
   await chargerAccueil(uid);
   await chargerLogo(uid);
   await chargerPresentation(uid);
+  await chargerGalerie(uid
   await chargerGalerie(uid);
+                    
 
   activerSauvegarde(uid);
   activerSauvegardeHoraires(uid);
@@ -77,7 +82,7 @@ onAuthStateChanged(auth, async (user) => {
   activerSauvegardeLogo(uid);
   activerSauvegardePresentation(uid);
   activerSauvegardeGalerie(uid);
-
+  activerAjoutImage(uid);
 
 });
 
@@ -298,117 +303,85 @@ function activerSauvegardePresentation(uid) {
 
 
 
-
-// 📥 Charger la galerie si elle existe
+// 📷 Charger la galerie depuis la sous-collection
 async function chargerGalerie(uid) {
-  const snap = await getDoc(doc(db, "galerie", uid));
-  if (snap.exists()) {
-    const data = snap.data();
-    if (Array.isArray(data.images)) {
-      imagesTemp = [...data.images];
-      listeImages.innerHTML = "";
-      data.images.forEach((url, index) => {
-  const container = document.createElement("div");
-  container.style.position = "relative";
-  container.style.display = "inline-block";
-  container.style.margin = "6px";
+  const imagesRef = collection(db, "galerie", uid, "images");
+  const q = query(imagesRef, orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
 
-  const img = document.createElement("img");
-  img.src = url;
-  img.style.maxHeight = "100px";
-  img.style.borderRadius = "4px";
+  listeImages.innerHTML = "";
+  snapshot.forEach((docSnap) => {
+    const url = docSnap.data().url;
+    const docId = docSnap.id;
 
-  const btn = document.createElement("button");
-  btn.textContent = "supprimer";
-  btn.style.fontSize = "10px";
-  btn.style.position = "absolute";
-  btn.style.top = "2px";
-  btn.style.right = "2px";
-  btn.style.background = "red";
-  btn.style.color = "white";
-  btn.style.border = "none";
-  btn.style.borderRadius = "50%";
-  btn.style.cursor = "pointer";
+    const container = document.createElement("div");
+    container.style.position = "relative";
+    container.style.display = "inline-block";
+    container.style.margin = "6px";
 
-  btn.addEventListener("click", () => {
-    imagesTemp = imagesTemp.filter(imgUrl => imgUrl !== url);
-    container.remove();
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.maxHeight = "100px";
+    img.style.borderRadius = "4px";
+
+    const btn = document.createElement("button");
+    btn.textContent = "supprimer";
+    btn.style.cssText = `
+      font-size: 12px;
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    `;
+
+    btn.addEventListener("click", async () => {
+      await deleteDoc(doc(db, "galerie", uid, "images", docId));
+      container.remove();
+    });
+
+    container.appendChild(img);
+    container.appendChild(btn);
+    listeImages.appendChild(container);
   });
-
-  container.appendChild(img);
-  container.appendChild(btn);
-  listeImages.appendChild(container);
-});
-
-
-    }
-  }
 }
 
-// 💾 Sauvegarde de la galerie
-function activerSauvegardeGalerie(uid) {
-  enregistrerBtn?.addEventListener("click", async () => {
+// ➕ Ajouter une image directement dans Firestore
+function activerAjoutImage(uid) {
+  ajouterBtn?.addEventListener("click", async () => {
+    const url = imageURLInput.value.trim();
+    if (!url) return;
+
     try {
-      await setDoc(doc(db, "galerie", uid), { images: imagesTemp });
-      messageGalerie.textContent = "✅ Galerie enregistrée";
+      await addDoc(collection(db, "galerie", uid, "images"), {
+        url,
+        createdAt: new Date(),
+      });
+      imageInput.value = "";
+      imageURLInput.value = "";
+      await chargerGalerie(uid);
+      messageGalerie.textContent = "✅ Image ajoutée avec succès";
       messageGalerie.style.color = "green";
-    } catch (err) {
-      console.error(err);
-      messageGalerie.textContent = "❌ Erreur d'enregistrement";
+    } catch (e) {
+      console.error(e);
+      messageGalerie.textContent = "❌ Erreur lors de l'ajout";
       messageGalerie.style.color = "red";
     }
 
     setTimeout(() => (messageGalerie.textContent = ""), 3000);
   });
 
-  ajouterBtn?.addEventListener("click", () => {
-    const url = imageURLInput.value.trim();
-    if (!url) return;
-
-    imagesTemp.push(url);
-    const container = document.createElement("div");
-container.style.position = "relative";
-container.style.display = "inline-block";
-container.style.margin = "6px";
-
-const img = document.createElement("img");
-img.src = url;
-img.style.maxHeight = "100px";
-img.style.borderRadius = "4px";
-
-const btn = document.createElement("button");
-btn.textContent = "supprimer";
-btn.style.fontSize = "12px";
-btn.style.position = "absolute";
-btn.style.top = "2px";
-btn.style.right = "2px";
-btn.style.background = "#ff3636";
-btn.style.color = "white";
-btn.style.border = "none";
-btn.style.borderRadius = "1px";
-btn.style.cursor = "pointer";
-
-btn.addEventListener("click", () => {
-  imagesTemp = imagesTemp.filter(imgUrl => imgUrl !== url);
-  container.remove();
-});
-
-container.appendChild(img);
-container.appendChild(btn);
-listeImages.prepend(container);
-
-
-
-    imageInput.value = "";
-    imageURLInput.value = "";
-  });
-
   imageInput?.addEventListener("change", () => {
     const fichier = imageInput.files[0];
     if (!fichier) return;
     const reader = new FileReader();
-    reader.onload = e => imageURLInput.value = e.target.result;
+    reader.onload = (e) => (imageURLInput.value = e.target.result);
     reader.readAsDataURL(fichier);
   });
+}
+
 }
 
