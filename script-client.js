@@ -144,8 +144,10 @@ async function chargerGalerie() {
 
         container.innerHTML = "";
 
-        // Afficher les dernières images en premier
-        [...data.images].reverse().forEach((url, index) => {
+        // On inverse les images pour afficher les plus récentes en haut
+        const reversedImages = [...data.images].reverse();
+
+        reversedImages.forEach((url, index) => {
           const img = document.createElement("img");
           img.src = url;
           img.className = "img-galerie";
@@ -153,14 +155,13 @@ async function chargerGalerie() {
           container.appendChild(img);
         });
 
-        initLightbox(data.images);
+        initLightbox(reversedImages); // on passe la version inversée
       }
     }
   } catch (err) {
     console.error("❌ Erreur chargement galerie :", err);
   }
 }
-
 
 function initLightbox(images) {
   const lightbox = document.querySelector(".lightbox");
@@ -171,6 +172,7 @@ function initLightbox(images) {
 
   let currentIndex = 0;
 
+  // Attacher les événements après chargement
   document.querySelectorAll(".img-galerie").forEach((img, i) => {
     img.addEventListener("click", () => {
       currentIndex = i;
@@ -197,9 +199,7 @@ function initLightbox(images) {
     showImage();
   });
 
-  // Fermer avec la touche ÉCHAP
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") lightbox.style.display = "none";
   });
 }
-
