@@ -302,7 +302,6 @@ function activerSauvegardePresentation(uid) {
 
 
 
-
 // 📷 Charger la galerie depuis la sous-collection
 async function chargerGalerie(uid) {
   const imagesRef = collection(db, "galerie", uid, "images");
@@ -323,6 +322,9 @@ async function chargerGalerie(uid) {
     img.src = url;
     img.style.maxHeight = "100px";
     img.style.borderRadius = "4px";
+    img.style.transition = "transform 0.2s";
+    img.addEventListener("mouseenter", () => (img.style.transform = "scale(1.05)"));
+    img.addEventListener("mouseleave", () => (img.style.transform = "scale(1)"));
 
     const btn = document.createElement("button");
     btn.textContent = "supprimer";
@@ -341,6 +343,9 @@ async function chargerGalerie(uid) {
     btn.addEventListener("click", async () => {
       await deleteDoc(doc(db, "galerie", uid, "images", docId));
       container.remove();
+      messageGalerie.textContent = "🗑️ Image supprimée";
+      messageGalerie.style.color = "orange";
+      setTimeout(() => (messageGalerie.textContent = ""), 3000);
     });
 
     container.appendChild(img);
@@ -354,6 +359,15 @@ function activerAjoutImage(uid) {
   ajouterBtn?.addEventListener("click", async () => {
     const url = imageURLInput.value.trim();
     if (!url) return;
+
+    // Vérifie si l’image est déjà dans la liste affichée
+    const dejaPresente = [...listeImages.querySelectorAll("img")].some(img => img.src === url);
+    if (dejaPresente) {
+      messageGalerie.textContent = "⚠️ Cette image est déjà présente";
+      messageGalerie.style.color = "orange";
+      setTimeout(() => (messageGalerie.textContent = ""), 3000);
+      return;
+    }
 
     try {
       await addDoc(collection(db, "galerie", uid, "images"), {
@@ -382,6 +396,5 @@ function activerAjoutImage(uid) {
     reader.readAsDataURL(fichier);
   });
 }
-
 
 
