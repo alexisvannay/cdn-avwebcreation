@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
 // 🔧 Configuration Firebase
 const firebaseConfig = {
@@ -130,39 +130,37 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-
 async function chargerGalerie() {
   try {
-    const galerieRef = doc(db, "galerie", uid);
-    const galerieSnap = await getDoc(galerieRef);
+    const imagesRef = collection(db, "galerie", uid, "images");
+    const q = query(imagesRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
 
-    if (galerieSnap.exists()) {
-      const data = galerieSnap.data();
-      if (Array.isArray(data.images)) {
-        const container = document.querySelector(".galerie");
-        if (!container) return;
+    const container = document.querySelector(".galerie");
+    if (!container) return;
 
-        container.innerHTML = "";
+    container.innerHTML = "";
+    const urls = [];
 
-        // On inverse les images pour afficher les plus récentes en haut
-        const reversedImages = [...data.images].reverse();
+    snapshot.forEach((docSnap, index) => {
+      const data = docSnap.data();
+      const url = data.url;
+      urls.push(url);
 
-        reversedImages.forEach((url, index) => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.className = "img-galerie";
-          img.setAttribute("data-index", index);
-          container.appendChild(img);
-        });
+      const img = document.createElement("img");
+      img.src = url;
+      img.className = "img-galerie";
+      img.setAttribute("data-index", index);
+      container.appendChild(img);
+    });
 
-        initLightbox(reversedImages); // on passe la version inversée
-      }
-    }
+    initLightbox(urls);
   } catch (err) {
     console.error("❌ Erreur chargement galerie :", err);
   }
 }
 
+// 💡 Lightbox inchangée, mais attachée après chargement
 function initLightbox(images) {
   const lightbox = document.querySelector(".lightbox");
   const lightboxImg = document.querySelector(".lightbox-img");
@@ -172,7 +170,6 @@ function initLightbox(images) {
 
   let currentIndex = 0;
 
-  // Attacher les événements après chargement
   document.querySelectorAll(".img-galerie").forEach((img, i) => {
     img.addEventListener("click", () => {
       currentIndex = i;
