@@ -383,5 +383,5 @@ function activerAjoutImage(uid) {
   });
 }
 
-}
+
 
