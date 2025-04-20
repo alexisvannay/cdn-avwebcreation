@@ -72,7 +72,7 @@ onAuthStateChanged(auth, async (user) => {
   await chargerAccueil(uid);
   await chargerLogo(uid);
   await chargerPresentation(uid);
-  await chargerGalerie(uid
+  await chargerGalerie(uid);
   await chargerGalerie(uid);
                     
 
