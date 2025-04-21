@@ -129,8 +129,10 @@ function ajouterLigne(j = "", h = "") {
   const container = document.getElementById("liste-horaires");
   const div = document.createElement("div");
   div.className = "horaire-ligne";
-  div.innerHTML = `<input class="jours" placeholder="Jour ou plage" value="${j}">
-                   <input class="heures" placeholder="Horaires" value="${h}">
+  div.innerHTML = `<div class="div-input-horaires">
+                      <input class="jours" placeholder="Jour ou plage" value="${j}">
+                      <input class="heures" placeholder="Horaires" value="${h}">
+                    </div>
                    <button class="bouton-supprimer-ligne">🗑</button>`;
   div.querySelector("button").addEventListener("click", () => div.remove());
   container?.appendChild(div);
