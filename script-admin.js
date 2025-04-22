@@ -321,7 +321,7 @@ async function chargerGalerie(uid) {
 
     const img = document.createElement("img");
     img.src = url;
-    img.style.maxHeight = "100px";
+    
     img.style.borderRadius = "4px";
     img.style.transition = "transform 0.2s";
     img.addEventListener("mouseenter", () => (img.style.transform = "scale(1.05)"));
