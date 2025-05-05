@@ -72,10 +72,7 @@ async function chargerInfosClient() {
       const sectionAccueil = document.querySelector(".accueil");
       if (sectionAccueil) {
         const imageUrl = data.image || "images/accueil.avif";
-        sectionAccueil.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${imageUrl})`;
-        sectionAccueil.style.backgroundSize = "cover";
-        sectionAccueil.style.backgroundPosition = "center";
-        sectionAccueil.style.backgroundRepeat = "no-repeat";
+        
       }
     }
 
