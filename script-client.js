@@ -32,6 +32,7 @@ async function chargerInfosClient() {
     const contactSnap = await getDoc(contactRef);
     if (contactSnap.exists()) {
       const data = contactSnap.data();
+      document.querySelectorAll(".nom-entreprise").forEach(el => el.textContent = data.nomEntreprise ?? "–");
       document.querySelectorAll(".contact-email").forEach(el => el.textContent = data.email ?? "–");
       document.querySelectorAll(".contact-phone").forEach(el => el.textContent = data.phone ?? "–");
       document.querySelectorAll(".contact-adresse").forEach(el => {
