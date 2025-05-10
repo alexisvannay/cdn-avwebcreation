@@ -30,6 +30,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 const db = getFirestore(app);
 const auth = getAuth(app);
 // 📌 DOM
+const nomEntrepriseInput = document.getElementById("nomEntreprise");
 const emailInput = document.getElementById("email");
 const phoneInput = document.getElementById("phone");
 const adresseInput = document.getElementById("adresse");
@@ -89,6 +90,7 @@ async function preRemplirFormulaire(uid) {
   const docSnap = await getDoc(doc(db, "infos", uid));
   if (docSnap.exists()) {
     const d = docSnap.data();
+    nomEntrepriseInput.value = d.nomEntreprise || "";
     emailInput.value = d.email || "";
     phoneInput.value = d.phone || "";
     adresseInput.value = d.adresse || "";
@@ -101,6 +103,7 @@ function activerSauvegarde(uid) {
   saveBtn?.addEventListener("click", async () => {
     try {
       await setDoc(doc(db, "infos", uid), {
+        nomEntreprise: nomEntrepriseInput.value.trim(),
         email: emailInput.value.trim(),
         phone: phoneInput.value.trim(),
         adresse: adresseInput.value.trim(),
